@@ -9,7 +9,7 @@ exports.joinRoom = function(roomName, onFileAnnounce, onMessage){
   .subscribe(function(err, data){
     if(!err){
       onMessage(data)
-      console.log(data)
+      //console.log(data)
     } else {
       console.log(err)
     }
@@ -19,7 +19,7 @@ exports.joinRoom = function(roomName, onFileAnnounce, onMessage){
   console.log(room, fileBox)
   fileBox.setDataType("file")
          .listen(function(err, fileName){
-           console.log("got file announce", fileName)
+           //console.log("got file announce", fileName)
            window.fileName = fileName
            onFileAnnounce(fileName)
          })
@@ -31,7 +31,7 @@ exports.shareFile = function(file){
 
 exports.getFile = function(fileName, callback){
   fileBox.fetch(fileName, function(err, file){
-    console.log("got file?", err, file)
+    //console.log("got file?", err, file)
     callback(err, file)
   })
 }

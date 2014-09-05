@@ -41,27 +41,26 @@ NameSpace.prototype.IO = function(suffix){
   return new NameSpace(this.prefix.toUri() + suf.toUri());
 }
 
-NameSpace.prototype.join = function(maxPeers, callback){
+NameSpace.prototype.join = function(maxPeers){
   var Self = this;
-  gremlin
-  .registerPrefix(this.prefix.toUri(), 1)
-  .addRegisteredPrefix(this.prefix.toUri(), 1)
-  .requestConnection(this.prefix.toUri() + Self.connectionRequestSuffix.toUri() , function(err, firstFaceID){
+
+  var onFace = function(err, firstFaceID){
     if (!err){
       gremlin.addRegisteredPrefix(Self.prefix, firstFaceID)
     }
 
     callback(err, firstFaceID);
-  })
-  .addConnectionListener(Self.prefix.toUri() + Self.connectionRequestSuffix.toUri() , maxPeers, function(err, newFaceID){
-    if(!err){
-      console.log("got new connection in namespace", newFaceID)
-      gremlin.addRegisteredPrefix(Self.prefix.toUri(), newFaceID)
-    } else {
-      console.log("error in connection Listener", err)
-    }
-    callback(err, newFaceID);
-  })
+  };
+
+  var onFaceClosed = function(closedFaceID){
+    gremlin.requestConnection(this.prefix.toUri() + Self.connectionRequestSuffix.toUri(), onFace )
+  }
+
+  gremlin
+  .registerPrefix(this.prefix.toUri(), 1)
+  .addRegisteredPrefix(this.prefix.toUri(), 1)
+  .requestConnection(this.prefix.toUri() + Self.connectionRequestSuffix.toUri() ,onFace , onFaceClosed)
+  .addConnectionListener(Self.prefix.toUri() + Self.connectionRequestSuffix.toUri() , maxPeers, onFace, onFaceClosed)
 
   return this;
 }

@@ -154,7 +154,7 @@ var makeDownloadButton = function(fileName){
     userList.empty();
 
     ndnFunc.joinRoom(chatChannel, makeDownloadButton, function(message){
-      console.log("on message",  message, $("#" + message.handle).length);
+      //console.log("on message",  message, $("#" + message.handle).length);
       if ($("#" + message.handle).length === 0 ){
         userList.append("<li id= '" + message.handle + "' data-username='" + message.handle + "'>" + message.handle + "</li>");
       }
