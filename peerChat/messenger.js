@@ -181,9 +181,10 @@ var makeDownloadButton = function(fileName){
       var message = messageContent.val();
 
       if(message !== "") {
+        messageContent.val("");
         ndnFunc.chat(message);
 
-        messageContent.val("");
+
       }
     });
 
