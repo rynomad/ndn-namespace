@@ -18,10 +18,10 @@ exports.joinRoom = function(roomName, onFileAnnounce, onMessage){
   window.fileBox = room.IO("files")
   console.log(room, fileBox)
   fileBox.setDataType("file")
-         .listen(function(err, uri){
+         .listen(function(err, fileName){
            console.log("got file announce", fileName)
            window.fileName = fileName
-           onFileAnnounce(uri)
+           onFileAnnounce(fileName)
          })
 }
 
@@ -31,8 +31,8 @@ exports.shareFile = function(file){
 
 exports.getFile = function(fileName, callback){
   fileBox.fetch(fileName, function(err, file){
-    console.log("got file?", err, data)
-    callback(err, data)
+    console.log("got file?", err, file)
+    callback(err, file)
   })
 }
 
@@ -40,6 +40,7 @@ exports.chat = function(message){
   room.publish("" + Math.random(), {
     handle: window.handle
     , message: message
+    , id : Date.now()
   })
 }
 module.exports = exports;

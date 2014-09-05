@@ -5970,6 +5970,7 @@ function NameSpace(prefix){
   this.connectionRequestSuffix = new ndn.Name("requestPeerConnection")
   this.announcementSuffix = new ndn.Name("announceNewData")
   gremlin.addRegisteredPrefix(this.prefix.toUri(), 0)
+  console.log(this.prefix.toUri(), gremlin.interfaces.Faces[0])
   return this;
 };
 
@@ -6067,7 +6068,7 @@ NameSpace.prototype.publish = function(name, toPublish) {
   gremlin
   .io
   .publisher.setName(this.prefix.toUri() + ndnName.toUri())
-  .setFreshnessPeriod(4000)
+  .setFreshnessPeriod(60 * 60 * 1000)
   .setToPublish(toPublish)
   .publish(Self.announce());
   return this;
@@ -6079,7 +6080,7 @@ NameSpace.prototype.fetch = function(name, onAppData){
   gremlin
   .io
   .fetcher.setName(this.prefix.toUri() + ndnName.toUri())
-  .setInterestLifetimeMillisecond(400)
+  .setInterestLifetimeMilliseconds(400)
   .setType(this.dataType)
   .get(onAppData);
   return this;
@@ -6102,10 +6103,96 @@ NameSpace.prototype.setDataType = function(type){
 
 module.exports = NameSpace;
 
-},{"ndn-gremlin":40,"ndn-io":134,"ndn-repo/src/database.js":244,"ndn-repo/src/repoEntry.js":245}],40:[function(require,module,exports){
+},{"ndn-gremlin":41,"ndn-io":135,"ndn-repo/src/database.js":245,"ndn-repo/src/repoEntry.js":246}],40:[function(require,module,exports){
+/* jshint node: true */
+'use strict';
+
+var EventEmitter = require('events').EventEmitter;
+
+/**
+  # dropkick
+
+  A helpful sidekick for dealing with the HTML5
+  [Drag and drop](http://www.w3.org/TR/html5/editing.html#dnd) API.
+
+  ## Example Usage
+
+  <<< examples/simple.js
+
+**/
+module.exports = function(target) {
+  var dropkick = new EventEmitter();
+  var emitFile = dropkick.emit.bind(dropkick, 'file');
+  var emitUri = dropkick.emit.bind(dropkick, 'uri');
+
+  function handleDragEnter(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    return false;
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+
+    return false;
+  }
+
+  function handleDrop(evt) {
+    var transfer = evt && evt.dataTransfer;
+    var files = [].slice.call((transfer && transfer.files) || []);
+    var urls = [];
+    var dataTypes = transfer ? [].slice.call(transfer.types) : [];
+
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    // iterate through the transfer types and decide the appropriate action
+    dataTypes.forEach(function(transferType) {
+      var data = transfer.getData(transferType);
+
+      switch (transferType) {
+        // case 'application/x-moz-file': {
+        //   console.log('got file: ', data);
+        // }
+
+        // case 'text/html': {
+        //   console.log('got html: ', data);
+        //   break;
+        // }
+
+        case 'text/x-moz-url': {
+          urls.push(data);
+        }
+
+        case 'text/uri-list': {
+          urls.push(data);
+        }
+      }
+    });
+
+    files.forEach(emitFile);
+    urls.forEach(emitUri);
+  }
+
+  function processItems(items) {
+    // if (items instanceof DataItemTransferList) {
+
+    // }
+  }
+
+  // add the various listeners
+  target.addEventListener('dragenter', handleDragEnter);
+  target.addEventListener('dragover', handleDragOver);
+  target.addEventListener('drop', handleDrop);
+
+  return dropkick;
+};
+},{"events":19}],41:[function(require,module,exports){
 module.exports = require("./src/Forwarder.js");
 
-},{"./src/Forwarder.js":129}],41:[function(require,module,exports){
+},{"./src/Forwarder.js":130}],42:[function(require,module,exports){
 exports.ndn = require("ndn-lib");
 exports.NameTree = require("./src/DataStructures/NameTree.js").installNDN(exports.ndn);
 exports.PIT = require("./src/DataStructures/PIT.js").installNDN(exports.ndn);
@@ -6116,7 +6203,7 @@ exports.Transports = require("./src/Transports/node/export.js");
 
 module.exports = exports;
 
-},{"./src/DataStructures/ContentStore.js":118,"./src/DataStructures/FIB.js":119,"./src/DataStructures/Interfaces.js":120,"./src/DataStructures/NameTree.js":121,"./src/DataStructures/PIT.js":123,"./src/Transports/node/export.js":126,"ndn-lib":51}],42:[function(require,module,exports){
+},{"./src/DataStructures/ContentStore.js":119,"./src/DataStructures/FIB.js":120,"./src/DataStructures/Interfaces.js":121,"./src/DataStructures/NameTree.js":122,"./src/DataStructures/PIT.js":124,"./src/Transports/node/export.js":127,"ndn-lib":52}],43:[function(require,module,exports){
 /*! asn1hex-1.1.js (c) 2012 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
 //
@@ -6421,7 +6508,7 @@ ASN1HEX.getDecendantHexTLVByNthList = _asnhex_getDecendantHexTLVByNthList;
 exports.ASN1HEX = ASN1HEX;
 module.exports = exports;
 
-},{"jsbn":113}],43:[function(require,module,exports){
+},{"jsbn":114}],44:[function(require,module,exports){
 // Copyright (c) 2003-2009  Tom Wu
 // All Rights Reserved.
 // 
@@ -6521,7 +6608,7 @@ exports.hex2b64  = hex2b64;
 
 module.exports = exports;
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -7247,7 +7334,7 @@ var CryptoJS = CryptoJS || (function (Math, undefined) {
 exports.CryptoJS = CryptoJS;
 module.exports = exports;
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 /*! crypto-1.0.4.js (c) 2013 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
 /*
@@ -7954,7 +8041,7 @@ KJUR.crypto.Signature = function(params) {
 exports.KJUR = KJUR;
 module.exports = exports;
 
-},{"./sha256.js":50,"jsbn":113}],46:[function(require,module,exports){
+},{"./sha256.js":51,"jsbn":114}],47:[function(require,module,exports){
 // Copyright (c) 2003-2009  Tom Wu
 // All Rights Reserved.
 // 
@@ -8164,7 +8251,7 @@ RSAKey.prototype.encryptOAEP = RSAEncryptOAEP;
 exports.RSAKey = RSAKey;
 module.exports = exports;
 
-},{"jsbn":113}],47:[function(require,module,exports){
+},{"jsbn":114}],48:[function(require,module,exports){
 // Copyright (c) 2003-2009  Tom Wu
 // All Rights Reserved.
 // 
@@ -8436,7 +8523,7 @@ RSAKey.prototype.decryptOAEP = RSADecryptOAEP;
 exports.RSAKey = RSAKey;
 module.exports = exports;
 
-},{"./rsa.js":46,"jsbn":113}],48:[function(require,module,exports){
+},{"./rsa.js":47,"jsbn":114}],49:[function(require,module,exports){
 /*! rsapem-1.1.js (c) 2012 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
 //
@@ -8553,7 +8640,7 @@ RSAKey.prototype.readPrivateKeyFromASN1HexString = _rsapem_readPrivateKeyFromASN
 exports.RSAKey = RSAKey;
 module.exports = exports;
 
-},{"./asn1hex-1.1.js":42,"./base64.js":43,"./rsa2.js":47}],49:[function(require,module,exports){
+},{"./asn1hex-1.1.js":43,"./base64.js":44,"./rsa2.js":48}],50:[function(require,module,exports){
 /*! rsasign-1.2.2.js (c) 2012 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
 //
@@ -8964,7 +9051,7 @@ RSAKey.SALT_LEN_RECOVER = -2;
 exports.RSAKey = RSAKey;
 module.exports = exports;
 
-},{"./rsapem-1.1.js":48,"jsbn":113}],50:[function(require,module,exports){
+},{"./rsapem-1.1.js":49,"jsbn":114}],51:[function(require,module,exports){
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -9164,7 +9251,7 @@ var C = require('./core.js').CryptoJS;
 exports.CryptoJS = C;
 module.exports = exports;
 
-},{"./core.js":44}],51:[function(require,module,exports){
+},{"./core.js":45}],52:[function(require,module,exports){
 exports.Face = require('./js/face.js').Face;
 exports.NDN = require('./js/face.js').NDN; // deprecated
 exports.Closure = require('./js/closure.js').Closure;
@@ -9212,7 +9299,7 @@ exports.NoVerifyPolicyManager = require('./js/security/policy/no-verify-policy-m
 exports.SelfVerifyPolicyManager = require('./js/security/policy/self-verify-policy-manager.js').SelfVerifyPolicyManager;
 exports.KeyChain = require('./js/security/key-chain.js').KeyChain;
 
-},{"./js/closure.js":54,"./js/data.js":56,"./js/encoding/binary-xml-wire-format.js":60,"./js/encoding/data-utils.js":61,"./js/encoding/encoding-utils.js":64,"./js/encoding/protobuf-tlv.js":65,"./js/encoding/tlv-wire-format.js":67,"./js/encoding/wire-format.js":72,"./js/exclude.js":73,"./js/face.js":75,"./js/forwarding-flags.js":77,"./js/interest.js":78,"./js/key-locator.js":79,"./js/key.js":80,"./js/meta-info.js":82,"./js/name.js":83,"./js/publisher-public-key-digest.js":85,"./js/security/identity/identity-manager.js":88,"./js/security/identity/identity-storage.js":89,"./js/security/identity/memory-identity-storage.js":90,"./js/security/identity/memory-private-key-storage.js":91,"./js/security/key-chain.js":93,"./js/security/key-manager.js":94,"./js/security/policy/no-verify-policy-manager.js":95,"./js/security/policy/policy-manager.js":96,"./js/security/policy/self-verify-policy-manager.js":97,"./js/security/policy/validation-request.js":98,"./js/security/security-exception.js":99,"./js/security/security-types.js":100,"./js/sha256-with-rsa-signature.js":101,"./js/transport/tcp-transport.js":52,"./js/transport/unix-transport.js":103,"./js/util/blob.js":105,"./js/util/memory-content-cache.js":108,"./js/util/name-enumeration.js":109,"./js/util/ndn-time.js":111}],52:[function(require,module,exports){
+},{"./js/closure.js":55,"./js/data.js":57,"./js/encoding/binary-xml-wire-format.js":61,"./js/encoding/data-utils.js":62,"./js/encoding/encoding-utils.js":65,"./js/encoding/protobuf-tlv.js":66,"./js/encoding/tlv-wire-format.js":68,"./js/encoding/wire-format.js":73,"./js/exclude.js":74,"./js/face.js":76,"./js/forwarding-flags.js":78,"./js/interest.js":79,"./js/key-locator.js":80,"./js/key.js":81,"./js/meta-info.js":83,"./js/name.js":84,"./js/publisher-public-key-digest.js":86,"./js/security/identity/identity-manager.js":89,"./js/security/identity/identity-storage.js":90,"./js/security/identity/memory-identity-storage.js":91,"./js/security/identity/memory-private-key-storage.js":92,"./js/security/key-chain.js":94,"./js/security/key-manager.js":95,"./js/security/policy/no-verify-policy-manager.js":96,"./js/security/policy/policy-manager.js":97,"./js/security/policy/self-verify-policy-manager.js":98,"./js/security/policy/validation-request.js":99,"./js/security/security-exception.js":100,"./js/security/security-types.js":101,"./js/sha256-with-rsa-signature.js":102,"./js/transport/tcp-transport.js":53,"./js/transport/unix-transport.js":104,"./js/util/blob.js":106,"./js/util/memory-content-cache.js":109,"./js/util/name-enumeration.js":110,"./js/util/ndn-time.js":112}],53:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -9235,7 +9322,7 @@ exports.KeyChain = require('./js/security/key-chain.js').KeyChain;
 // The Face constructor uses TcpTransport by default which is not available in the browser, so override to WebSocketTransport.
 exports.TcpTransport = require("./transport/web-socket-transport").WebSocketTransport;
 
-},{"./transport/web-socket-transport":104}],53:[function(require,module,exports){
+},{"./transport/web-socket-transport":105}],54:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -9397,7 +9484,7 @@ module.exports = exports
 // After this we include contrib/feross/buffer.js to define the Buffer class.
 
 }).call(this,require("buffer").Buffer)
-},{"../contrib/securityLib/asn1hex-1.1.js":42,"../contrib/securityLib/base64.js":43,"../contrib/securityLib/crypto-1.0.js":45,"../contrib/securityLib/rsasign-1.2.js":49,"./key.js":80,"buffer":3}],54:[function(require,module,exports){
+},{"../contrib/securityLib/asn1hex-1.1.js":43,"../contrib/securityLib/base64.js":44,"../contrib/securityLib/crypto-1.0.js":46,"../contrib/securityLib/rsasign-1.2.js":50,"./key.js":81,"buffer":3}],55:[function(require,module,exports){
 /**
  * Provide the callback closure for the async communication methods in the Face class.
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -9493,7 +9580,7 @@ UpcallInfo.prototype.toString = function()
 
 exports.UpcallInfo = UpcallInfo;
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -9697,7 +9784,7 @@ ControlParameters.prototype.setExpirationPeriod = function(expirationPeriod)
   this.expirationPeriod = expirationPeriod;
 };
 
-},{"./encoding/wire-format.js":72,"./forwarding-flags.js":77,"./name.js":83}],56:[function(require,module,exports){
+},{"./encoding/wire-format.js":73,"./forwarding-flags.js":78,"./name.js":84}],57:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents an NDN Data object.
@@ -10063,7 +10150,7 @@ ContentObject.prototype = new Data();
 exports.ContentObject = ContentObject;
 
 }).call(this,require("buffer").Buffer)
-},{"./crypto.js":53,"./encoding/binary-xml-encoder.js":58,"./encoding/binary-xml-wire-format.js":60,"./encoding/data-utils.js":61,"./encoding/wire-format.js":72,"./key-locator.js":79,"./meta-info.js":82,"./name.js":83,"./security/key-manager.js":94,"./sha256-with-rsa-signature.js":101,"./util/blob.js":105,"./util/ndn-protoco-id-tags.js":110,"./util/signed-blob.js":112,"buffer":3}],57:[function(require,module,exports){
+},{"./crypto.js":54,"./encoding/binary-xml-encoder.js":59,"./encoding/binary-xml-wire-format.js":61,"./encoding/data-utils.js":62,"./encoding/wire-format.js":73,"./key-locator.js":80,"./meta-info.js":83,"./name.js":84,"./security/key-manager.js":95,"./sha256-with-rsa-signature.js":102,"./util/blob.js":106,"./util/ndn-protoco-id-tags.js":111,"./util/signed-blob.js":113,"buffer":3}],58:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class is used to decode ndnb binary elements (blob, type/value pairs).
@@ -10791,7 +10878,7 @@ BinaryXMLDecoder.prototype.seek = function(offset)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../log.js":81,"../util/ndn-protoco-id-tags.js":110,"../util/ndn-time.js":111,"./data-utils.js":61,"./decoding-exception.js":62,"buffer":3}],58:[function(require,module,exports){
+},{"../log.js":82,"../util/ndn-protoco-id-tags.js":111,"../util/ndn-time.js":112,"./data-utils.js":62,"./decoding-exception.js":63,"buffer":3}],59:[function(require,module,exports){
 /**
  * This class is used to encode ndnb binary elements (blob, type/value pairs).
  *
@@ -11239,7 +11326,7 @@ BinaryXMLEncoder.prototype.getReducedOstream = function()
   return this.ostream.slice(0, this.offset);
 };
 
-},{"../log.js":81,"../util/dynamic-buffer.js":107,"../util/ndn-protoco-id-tags.js":110,"./data-utils.js":61}],59:[function(require,module,exports){
+},{"../log.js":82,"../util/dynamic-buffer.js":108,"../util/ndn-protoco-id-tags.js":111,"./data-utils.js":62}],60:[function(require,module,exports){
 /**
  * This class uses BinaryXMLDecoder to follow the structure of a ndnb binary element to
  * determine its end.
@@ -11447,7 +11534,7 @@ BinaryXMLStructureDecoder.prototype.seek = function(offset)
   this.offset = offset;
 };
 
-},{"../util/dynamic-buffer.js":107,"./binary-xml-decoder.js":57}],60:[function(require,module,exports){
+},{"../util/dynamic-buffer.js":108,"./binary-xml-decoder.js":58}],61:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -11814,7 +11901,7 @@ BinaryXmlWireFormat.decodeData = function(data, decoder)
            signedPortionEndOffset: signedPortionEndOffset };
 };
 
-},{"../exclude.js":73,"../key-locator.js":79,"../meta-info.js":82,"../name.js":83,"../publisher-public-key-digest.js":85,"../sha256-with-rsa-signature.js":101,"../util/blob.js":105,"../util/ndn-protoco-id-tags.js":110,"./binary-xml-decoder.js":57,"./binary-xml-encoder.js":58,"./data-utils.js":61,"./wire-format.js":72}],61:[function(require,module,exports){
+},{"../exclude.js":74,"../key-locator.js":80,"../meta-info.js":83,"../name.js":84,"../publisher-public-key-digest.js":86,"../sha256-with-rsa-signature.js":102,"../util/blob.js":106,"../util/ndn-protoco-id-tags.js":111,"./binary-xml-decoder.js":58,"./binary-xml-encoder.js":59,"./data-utils.js":62,"./wire-format.js":73}],62:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class contains utilities to help parse the data
@@ -12135,7 +12222,7 @@ DataUtils.shuffle = function(array)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],62:[function(require,module,exports){
+},{"buffer":3}],63:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -12173,7 +12260,7 @@ DecodingException.prototype.name = "DecodingException";
 
 exports.DecodingException = DecodingException;
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -12284,7 +12371,7 @@ ElementReader.prototype.onReceivedData = function(/* Buffer */ data)
   }
 };
 
-},{"../log.js":81,"./binary-xml-structure-decoder.js":59,"./data-utils.js":61,"./tlv/tlv-structure-decoder.js":70,"./tlv/tlv.js":71}],64:[function(require,module,exports){
+},{"../log.js":82,"./binary-xml-structure-decoder.js":60,"./data-utils.js":62,"./tlv/tlv-structure-decoder.js":71,"./tlv/tlv.js":72}],65:[function(require,module,exports){
 /**
  * This file contains utilities to help encode and decode NDN objects.
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -12537,7 +12624,7 @@ function encodeToBinaryInterest(interest) { return interest.wireEncode().buf(); 
  */
 function encodeToBinaryContentObject(data) { return data.wireEncode().buf(); }
 
-},{"../data.js":56,"../face-instance.js":74,"../forwarding-entry.js":76,"../interest.js":78,"../key-locator.js":79,"../key.js":80,"../log.js":81,"./binary-xml-decoder.js":57,"./binary-xml-encoder.js":58,"./data-utils.js":61,"./wire-format.js":72}],65:[function(require,module,exports){
+},{"../data.js":57,"../face-instance.js":75,"../forwarding-entry.js":77,"../interest.js":79,"../key-locator.js":80,"../key.js":81,"../log.js":82,"./binary-xml-decoder.js":58,"./binary-xml-encoder.js":59,"./data-utils.js":62,"./wire-format.js":73}],66:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -12762,7 +12849,7 @@ ProtobufTlv._decodeFieldValue = function(field, tlvType, decoder, endOffset)
     throw new Error("ProtobufTlv.decode: Unknown field type");
 };
 
-},{"../util/blob.js":105,"./tlv/tlv-decoder.js":68,"./tlv/tlv-encoder.js":69,"protobufjs/dist/ProtoBuf.js":114}],66:[function(require,module,exports){
+},{"../util/blob.js":106,"./tlv/tlv-decoder.js":69,"./tlv/tlv-encoder.js":70,"protobufjs/dist/ProtoBuf.js":115}],67:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -13421,7 +13508,7 @@ Tlv0_1WireFormat.decodeMetaInfo = function(metaInfo, decoder)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../crypto.js":53,"../exclude.js":73,"../forwarding-flags.js":77,"../key-locator.js":79,"../meta-info.js":82,"../publisher-public-key-digest.js":85,"../sha256-with-rsa-signature.js":101,"../util/blob.js":105,"./decoding-exception.js":62,"./tlv/tlv-decoder.js":68,"./tlv/tlv-encoder.js":69,"./tlv/tlv.js":71,"./wire-format.js":72,"buffer":3}],67:[function(require,module,exports){
+},{"../crypto.js":54,"../exclude.js":74,"../forwarding-flags.js":78,"../key-locator.js":80,"../meta-info.js":83,"../publisher-public-key-digest.js":86,"../sha256-with-rsa-signature.js":102,"../util/blob.js":106,"./decoding-exception.js":63,"./tlv/tlv-decoder.js":69,"./tlv/tlv-encoder.js":70,"./tlv/tlv.js":72,"./wire-format.js":73,"buffer":3}],68:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -13481,7 +13568,7 @@ TlvWireFormat.get = function()
 // This module will be loaded because WireFormat loads it.
 WireFormat.setDefaultWireFormat(TlvWireFormat.get());
 
-},{"./tlv-0_1-wire-format.js":66,"./wire-format.js":72}],68:[function(require,module,exports){
+},{"./tlv-0_1-wire-format.js":67,"./wire-format.js":73}],69:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -13820,7 +13907,7 @@ TlvDecoder.prototype.seek = function(offset)
   this.offset = offset;
 };
 
-},{"../decoding-exception.js":62}],69:[function(require,module,exports){
+},{"../decoding-exception.js":63}],70:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -14049,7 +14136,7 @@ TlvEncoder.prototype.getOutput = function()
   return this.output.array.slice(this.output.array.length - this.length);
 };
 
-},{"../../util/dynamic-buffer.js":107}],70:[function(require,module,exports){
+},{"../../util/dynamic-buffer.js":108}],71:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2014 Regents of the University of California.
@@ -14274,7 +14361,7 @@ TlvStructureDecoder.prototype.seek = function(offset)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"./tlv-decoder.js":68,"buffer":3}],71:[function(require,module,exports){
+},{"./tlv-decoder.js":69,"buffer":3}],72:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -14364,7 +14451,7 @@ Tlv.ControlParameters_Flags =               108;
 Tlv.ControlParameters_Strategy =            107;
 Tlv.ControlParameters_ExpirationPeriod =    109;
 
-},{}],72:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -14549,7 +14636,7 @@ WireFormat.getDefaultWireFormat = function()
 // to avoid problems with cycles of require.
 var TlvWireFormat = require('./tlv-wire-format.js').TlvWireFormat;
 
-},{"./tlv-wire-format.js":67}],73:[function(require,module,exports){
+},{"./tlv-wire-format.js":68}],74:[function(require,module,exports){
 /**
  * This class represents an Interest Exclude.
  * Copyright (C) 2014 Regents of the University of California.
@@ -14802,7 +14889,7 @@ Exclude.prototype.getChangeCount = function()
   return this.changeCount;
 };
 
-},{"./encoding/binary-xml-decoder.js":57,"./encoding/binary-xml-encoder.js":58,"./encoding/data-utils.js":61,"./name.js":83,"./util/blob.js":105,"./util/ndn-protoco-id-tags.js":110}],74:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":58,"./encoding/binary-xml-encoder.js":59,"./encoding/data-utils.js":62,"./name.js":84,"./util/blob.js":106,"./util/ndn-protoco-id-tags.js":111}],75:[function(require,module,exports){
 /**
  * This class represents Face Instances
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -14929,7 +15016,7 @@ FaceInstance.prototype.getElementLabel = function()
 };
 
 
-},{"./publisher-public-key-digest.js":85,"./util/ndn-protoco-id-tags.js":110}],75:[function(require,module,exports){
+},{"./publisher-public-key-digest.js":86,"./util/ndn-protoco-id-tags.js":111}],76:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents the top-level object for communicating with an NDN host.
@@ -16370,7 +16457,7 @@ NDN.OPENED = Face.OPENED;
 NDN.CLOSED = Face.CLOSED;
 
 }).call(this,require("buffer").Buffer)
-},{"./closure.js":54,"./control-parameters.js":55,"./data.js":56,"./encoding/binary-xml-decoder.js":57,"./encoding/binary-xml-encoder.js":58,"./encoding/binary-xml-wire-format.js":60,"./encoding/data-utils.js":61,"./encoding/tlv-wire-format.js":67,"./encoding/tlv/tlv-decoder.js":68,"./encoding/tlv/tlv.js":71,"./forwarding-entry.js":76,"./forwarding-flags.js":77,"./interest.js":78,"./key-locator.js":79,"./key.js":80,"./log.js":81,"./meta-info.js":82,"./name.js":83,"./security/key-manager.js":94,"./transport/tcp-transport.js":52,"./transport/transport.js":102,"./transport/unix-transport.js":103,"./util/command-interest-generator.js":106,"./util/ndn-protoco-id-tags.js":110,"buffer":3,"crypto":9,"fs":1}],76:[function(require,module,exports){
+},{"./closure.js":55,"./control-parameters.js":56,"./data.js":57,"./encoding/binary-xml-decoder.js":58,"./encoding/binary-xml-encoder.js":59,"./encoding/binary-xml-wire-format.js":61,"./encoding/data-utils.js":62,"./encoding/tlv-wire-format.js":68,"./encoding/tlv/tlv-decoder.js":69,"./encoding/tlv/tlv.js":72,"./forwarding-entry.js":77,"./forwarding-flags.js":78,"./interest.js":79,"./key-locator.js":80,"./key.js":81,"./log.js":82,"./meta-info.js":83,"./name.js":84,"./security/key-manager.js":95,"./transport/tcp-transport.js":53,"./transport/transport.js":103,"./transport/unix-transport.js":104,"./util/command-interest-generator.js":107,"./util/ndn-protoco-id-tags.js":111,"buffer":3,"crypto":9,"fs":1}],77:[function(require,module,exports){
 /**
  * This class represents Forwarding Entries
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -16467,7 +16554,7 @@ ForwardingEntry.prototype.to_ndnb = function(
 
 ForwardingEntry.prototype.getElementLabel = function() { return NDNProtocolDTags.ForwardingEntry; }
 
-},{"./forwarding-flags.js":77,"./name.js":83,"./publisher-public-key-digest.js":85,"./util/ndn-protoco-id-tags.js":110}],77:[function(require,module,exports){
+},{"./forwarding-flags.js":78,"./name.js":84,"./publisher-public-key-digest.js":86,"./util/ndn-protoco-id-tags.js":111}],78:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -16689,7 +16776,7 @@ ForwardingFlags.prototype.setTap = function(value) { this.tap = value; };
  */
 ForwardingFlags.prototype.setCaptureOk = function(value) { this.captureOk = value; };
 
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents Interest Objects
@@ -17171,7 +17258,7 @@ Interest.prototype.decode = function(input, wireFormat)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"./encoding/binary-xml-wire-format.js":60,"./encoding/wire-format.js":72,"./exclude.js":73,"./key-locator.js":79,"./name.js":83,"./publisher-public-key-digest.js":85,"./util/blob.js":105,"buffer":3}],79:[function(require,module,exports){
+},{"./encoding/binary-xml-wire-format.js":61,"./encoding/wire-format.js":73,"./exclude.js":74,"./key-locator.js":80,"./name.js":84,"./publisher-public-key-digest.js":86,"./util/blob.js":106,"buffer":3}],80:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents an NDN KeyLocator object.
@@ -17487,7 +17574,7 @@ KeyName.prototype.getElementLabel = function() { return NDNProtocolDTags.KeyName
 
 
 }).call(this,require("buffer").Buffer)
-},{"./log.js":81,"./name.js":83,"./publisher-id.js":84,"./util/blob.js":105,"./util/ndn-protoco-id-tags.js":110,"buffer":3}],80:[function(require,module,exports){
+},{"./log.js":82,"./name.js":84,"./publisher-id.js":85,"./util/blob.js":106,"./util/ndn-protoco-id-tags.js":111,"buffer":3}],81:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents Key Objects
@@ -17640,7 +17727,7 @@ Key.createFromPEM = function(obj)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"./encoding/data-utils.js":61,"./log.js":81,"buffer":3,"crypto":9}],81:[function(require,module,exports){
+},{"./encoding/data-utils.js":62,"./log.js":82,"buffer":3,"crypto":9}],82:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -17675,7 +17762,7 @@ exports.Log = Log;
  */
 Log.LOG = 0;
 
-},{}],82:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents an NDN Data MetaInfo object.
@@ -18007,7 +18094,7 @@ SignedInfo.prototype = new MetaInfo(null, null, null, null, null, null, true);
 exports.SignedInfo = SignedInfo;
 
 }).call(this,require("buffer").Buffer)
-},{"./encoding/binary-xml-decoder.js":57,"./encoding/binary-xml-encoder.js":58,"./key-locator.js":79,"./log.js":81,"./name.js":83,"./publisher-public-key-digest.js":85,"./security/key-manager.js":94,"./util/blob.js":105,"./util/ndn-protoco-id-tags.js":110,"./util/ndn-time.js":111,"buffer":3}],83:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":58,"./encoding/binary-xml-encoder.js":59,"./key-locator.js":80,"./log.js":82,"./name.js":84,"./publisher-public-key-digest.js":86,"./security/key-manager.js":95,"./util/blob.js":106,"./util/ndn-protoco-id-tags.js":111,"./util/ndn-time.js":112,"buffer":3}],84:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents a Name as an array of components where each is a byte array.
@@ -18897,7 +18984,7 @@ Name.prototype.getChangeCount = function()
 var TlvEncoder = require('./encoding/tlv/tlv-encoder.js').TlvEncoder;
 
 }).call(this,require("buffer").Buffer)
-},{"./encoding/binary-xml-decoder.js":57,"./encoding/binary-xml-encoder.js":58,"./encoding/data-utils.js":61,"./encoding/tlv/tlv-encoder.js":69,"./log.js":81,"./util/blob.js":105,"./util/ndn-protoco-id-tags.js":110,"buffer":3}],84:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":58,"./encoding/binary-xml-encoder.js":59,"./encoding/data-utils.js":62,"./encoding/tlv/tlv-encoder.js":70,"./log.js":82,"./util/blob.js":106,"./util/ndn-protoco-id-tags.js":111,"buffer":3}],85:[function(require,module,exports){
 /**
  * This class represents Publisher and PublisherType Objects
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -19024,7 +19111,7 @@ PublisherID.prototype.getChangeCount = function()
   return this.changeCount;
 };
 
-},{"./encoding/decoding-exception.js":62,"./util/ndn-protoco-id-tags.js":110}],85:[function(require,module,exports){
+},{"./encoding/decoding-exception.js":63,"./util/ndn-protoco-id-tags.js":111}],86:[function(require,module,exports){
 /**
  * This class represents PublisherPublicKeyDigest Objects
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -19107,7 +19194,7 @@ PublisherPublicKeyDigest.prototype.getChangeCount = function()
   return this.changeCount;
 };
 
-},{"./log.js":81,"./util/ndn-protoco-id-tags.js":110}],86:[function(require,module,exports){
+},{"./log.js":82,"./util/ndn-protoco-id-tags.js":111}],87:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -19160,7 +19247,7 @@ IdentityCertificate.certificateNameToPublicKeyName = function(certificateName)
     (tmpName.getSubName(i + 1, tmpName.size() - i - 1));
 };
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -19254,7 +19341,7 @@ PublicKey.prototype.getKeyDer = function()
   return this.keyDer;
 };
 
-},{"../security-exception.js":99,"../security-types.js":100}],88:[function(require,module,exports){
+},{"../security-exception.js":100,"../security-types.js":101}],89:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2014 Regents of the University of California.
@@ -19589,7 +19676,7 @@ IdentityManager.certificateNameToPublicKeyName = function(certificateName)
     (i + 1, tmpName.size() - i - 1));
 };
 }).call(this,require("buffer").Buffer)
-},{"../../data.js":56,"../../encoding/wire-format.js":72,"../../key-locator.js":79,"../../name.js":83,"../../sha256-with-rsa-signature.js":101,"../security-exception.js":99,"buffer":3}],89:[function(require,module,exports){
+},{"../../data.js":57,"../../encoding/wire-format.js":73,"../../key-locator.js":80,"../../name.js":84,"../../sha256-with-rsa-signature.js":102,"../security-exception.js":100,"buffer":3}],90:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -19858,7 +19945,7 @@ IdentityStorage.prototype.setDefaultCertificateNameForKey = function
   throw new Error("IdentityStorage.setDefaultCertificateNameForKey is not implemented");
 };
 
-},{"../../name.js":83,"../security-exception.js":99}],90:[function(require,module,exports){
+},{"../../name.js":84,"../security-exception.js":100}],91:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -20177,7 +20264,7 @@ MemoryIdentityStorage.prototype.setDefaultCertificateNameForKey = function
   throw new Error("MemoryIdentityStorage.setDefaultCertificateNameForKey is not implemented");
 };
 
-},{"../../data.js":56,"../../encoding/data-utils.js":61,"../../name.js":83,"../../util/blob.js":105,"../security-exception.js":99,"../security-types.js":100,"./identity-storage.js":89}],91:[function(require,module,exports){
+},{"../../data.js":57,"../../encoding/data-utils.js":62,"../../name.js":84,"../../util/blob.js":106,"../security-exception.js":100,"../security-types.js":101,"./identity-storage.js":90}],92:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2014 Regents of the University of California.
@@ -20346,7 +20433,7 @@ MemoryPrivateKeyStorage.prototype.doesKeyExist = function(keyName, keyClass)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../../encoding/data-utils.js":61,"../../util/blob.js":105,"../certificate/public-key.js":87,"../security-exception.js":99,"../security-types.js":100,"./private-key-storage.js":92,"buffer":3,"crypto":9}],92:[function(require,module,exports){
+},{"../../encoding/data-utils.js":62,"../../util/blob.js":106,"../certificate/public-key.js":88,"../security-exception.js":100,"../security-types.js":101,"./private-key-storage.js":93,"buffer":3,"crypto":9}],93:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -20467,7 +20554,7 @@ PrivateKeyStorage.prototype.doesKeyExist = function(keyName, keyClass)
   throw new Error("PrivateKeyStorage.doesKeyExist is not implemented");
 };
 
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -20968,7 +21055,7 @@ KeyChain.prototype.onCertificateInterestTimeout = function
     onVerifyFailed(data);
 };
 
-},{"../data.js":56,"../encoding/tlv/tlv-encoder.js":69,"../encoding/tlv/tlv.js":71,"../encoding/wire-format.js":72,"../interest.js":78,"../key-locator.js":79,"../name.js":83,"../sha256-with-rsa-signature.js":101,"./security-exception.js":99}],94:[function(require,module,exports){
+},{"../data.js":57,"../encoding/tlv/tlv-encoder.js":70,"../encoding/tlv/tlv.js":72,"../encoding/wire-format.js":73,"../interest.js":79,"../key-locator.js":80,"../name.js":84,"../sha256-with-rsa-signature.js":102,"./security-exception.js":100}],95:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Meki Cheraoui
@@ -21057,7 +21144,7 @@ KeyManager.prototype.getKey = function()
 var globalKeyManager = globalKeyManager || new KeyManager();
 exports.globalKeyManager = globalKeyManager;
 
-},{"../key.js":80}],95:[function(require,module,exports){
+},{"../key.js":81}],96:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21166,7 +21253,7 @@ NoVerifyPolicyManager.prototype.inferSigningIdentity = function(dataName)
   return new Name();
 };
 
-},{"../../name.js":83,"./policy-manager.js":96}],96:[function(require,module,exports){
+},{"../../name.js":84,"./policy-manager.js":97}],97:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21277,7 +21364,7 @@ PolicyManager.prototype.inferSigningIdentity = function(dataName)
   throw new Error("PolicyManager.inferSigningIdentity is not implemented");
 };
 
-},{}],97:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21517,7 +21604,7 @@ SelfVerifyPolicyManager.verifySha256WithRsaSignature = function
   return verifier.verify(keyPem, signatureBytes);
 };
 
-},{"../../data.js":56,"../../encoding/data-utils.js":61,"../../encoding/wire-format.js":72,"../../key-locator.js":79,"../../name.js":83,"../certificate/identity-certificate.js":86,"../security-exception.js":99,"./policy-manager.js":96,"crypto":9}],98:[function(require,module,exports){
+},{"../../data.js":57,"../../encoding/data-utils.js":62,"../../encoding/wire-format.js":73,"../../key-locator.js":80,"../../name.js":84,"../certificate/identity-certificate.js":87,"../security-exception.js":100,"./policy-manager.js":97,"crypto":9}],99:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21565,7 +21652,7 @@ var ValidationRequest = function ValidationRequest
 
 exports.ValidationRequest = ValidationRequest;
 
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21604,7 +21691,7 @@ SecurityException.prototype.name = "SecurityException";
 
 exports.SecurityException = SecurityException;
 
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21679,7 +21766,7 @@ EncryptMode.DEFAULT = 1;
 EncryptMode.CFB_AES = 2;
 // EncryptMode.CBC_AES
 
-},{}],101:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 (function (Buffer){
 /**
  * This class represents an NDN Data Signature object.
@@ -21886,7 +21973,7 @@ Signature.prototype = new Sha256WithRsaSignature();
 exports.Signature = Signature;
 
 }).call(this,require("buffer").Buffer)
-},{"./encoding/binary-xml-decoder.js":57,"./encoding/binary-xml-encoder.js":58,"./key-locator.js":79,"./log.js":81,"./util/blob.js":105,"./util/ndn-protoco-id-tags.js":110,"buffer":3}],102:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":58,"./encoding/binary-xml-encoder.js":59,"./key-locator.js":80,"./log.js":82,"./util/blob.js":106,"./util/ndn-protoco-id-tags.js":111,"buffer":3}],103:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -21922,7 +22009,7 @@ exports.Transport = Transport;
 Transport.ConnectionInfo = function TransportConnectionInfo()
 {
 };
-},{}],103:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2014 Regents of the University of California.
@@ -22090,7 +22177,7 @@ UnixTransport.prototype.close = function()
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../encoding/element-reader.js":63,"../log.js":81,"./transport.js":102,"buffer":3,"net":1}],104:[function(require,module,exports){
+},{"../encoding/element-reader.js":64,"../log.js":82,"./transport.js":103,"buffer":3,"net":1}],105:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -22307,7 +22394,7 @@ WebSocketTransport.prototype.close = function()
 
 
 }).call(this,require("buffer").Buffer)
-},{"../encoding/element-reader.js":63,"../log.js":81,"./transport.js":102,"buffer":3}],105:[function(require,module,exports){
+},{"../encoding/element-reader.js":64,"../log.js":82,"./transport.js":103,"buffer":3}],106:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2013 Regents of the University of California.
@@ -22447,7 +22534,7 @@ Blob.prototype.equals = function(other)
   }
 };
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],106:[function(require,module,exports){
+},{"buffer":3}],107:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -22529,7 +22616,7 @@ CommandInterestGenerator.prototype.generate = function
   this.lastTimestamp = timestamp;
 };
 
-},{"../encoding/tlv/tlv-encoder.js":69,"../encoding/wire-format.js":72,"./blob.js":105,"crypto":9}],107:[function(require,module,exports){
+},{"../encoding/tlv/tlv-encoder.js":70,"../encoding/wire-format.js":73,"./blob.js":106,"crypto":9}],108:[function(require,module,exports){
 (function (Buffer){
 /**
  * Encapsulate a Buffer and support dynamic reallocation.
@@ -22658,7 +22745,7 @@ DynamicBuffer.prototype.slice = function(begin, end)
 };
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],108:[function(require,module,exports){
+},{"buffer":3}],109:[function(require,module,exports){
 /**
  * Copyright (C) 2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -22928,7 +23015,7 @@ MemoryContentCache.StaleTimeContent.prototype.isStale = function(nowMilliseconds
   return this.staleTimeMilliseconds <= nowMilliseconds;
 };
 
-},{"../name.js":83}],109:[function(require,module,exports){
+},{"../name.js":84}],110:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -23083,7 +23170,7 @@ NameEnumeration.endsWithSegmentNumber = function(name) {
 };
 
 }).call(this,require("buffer").Buffer)
-},{"../encoding/binary-xml-decoder.js":57,"../encoding/data-utils.js":61,"../name.js":83,"./ndn-protoco-id-tags.js":110,"buffer":3}],110:[function(require,module,exports){
+},{"../encoding/binary-xml-decoder.js":58,"../encoding/data-utils.js":62,"../name.js":84,"./ndn-protoco-id-tags.js":111,"buffer":3}],111:[function(require,module,exports){
 /**
  * This class contains all NDNx tags
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -23254,7 +23341,7 @@ var NDNProtocolDTagsStrings = [
 
 exports.NDNProtocolDTagsStrings = NDNProtocolDTagsStrings;
 
-},{}],111:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 /**
  * This class represents NDNTime Objects
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -23300,7 +23387,7 @@ NDNTime.prototype.getJavascriptDate = function()
   return d
 };
 
-},{"../log.js":81}],112:[function(require,module,exports){
+},{"../log.js":82}],113:[function(require,module,exports){
 /**
  * Copyright (C) 2013 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -23410,7 +23497,7 @@ SignedBlob.prototype.getSignedPortionEndOffset = function()
   return this.signedPortionEndOffset;
 };
 
-},{"./blob.js":105}],113:[function(require,module,exports){
+},{"./blob.js":106}],114:[function(require,module,exports){
 (function(){
 
     // Copyright (c) 2005  Tom Wu
@@ -24641,7 +24728,7 @@ SignedBlob.prototype.getSignedPortionEndOffset = function()
 
 }).call(this);
 
-},{}],114:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
 
@@ -28774,7 +28861,7 @@ SignedBlob.prototype.getSignedPortionEndOffset = function()
 
 })(this);
 
-},{"bytebuffer":115,"fs":1,"path":22}],115:[function(require,module,exports){
+},{"bytebuffer":116,"fs":1,"path":22}],116:[function(require,module,exports){
 /*
  ByteBuffer.js (c) 2013-2014 Daniel Wirtz <dcode@dcode.io>
  This version of ByteBuffer.js uses an ArrayBuffer (AB) as its backing buffer and is compatible with modern browsers.
@@ -28864,7 +28951,7 @@ return d},a:function(b){var c=0,d=0;a.d(b,function(b){++c;d+=a.f(b)});return[c,d
 " <= "+this.buffer.byteLength);}var c=this,d;try{l.b(function(){return a<b?c.view.getUint8(a++):null},d=s())}catch(h){if(a!==b)throw new RangeError("Illegal range: Truncated data, "+a+" != "+b);}return d()};d.fromUTF8=function(a,b,c){if(!c&&"string"!==typeof a)throw new TypeError("Illegal str: Not a string");var e=new d(l.a(m(a),!0)[1],b,c),h=0;l.c(m(a),function(a){e.view.setUint8(h++,a)});e.limit=h;return e};return d}"undefined"!==typeof module&&module.exports?module.exports=t(require("long")):"function"===
 typeof define&&define.amd?define("ByteBuffer",["Long"],function(k){return t(k)}):(r.dcodeIO=r.dcodeIO||{}).ByteBuffer=t(r.dcodeIO.Long)})(this);
 
-},{"long":117}],116:[function(require,module,exports){
+},{"long":118}],117:[function(require,module,exports){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
  Copyright 2009 The Closure Library Authors. All Rights Reserved.
@@ -29812,7 +29899,7 @@ typeof define&&define.amd?define("ByteBuffer",["Long"],function(k){return t(k)})
 
 })(this);
 
-},{}],117:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
  Copyright 2009 The Closure Library Authors. All Rights Reserved.
@@ -29832,7 +29919,7 @@ typeof define&&define.amd?define("ByteBuffer",["Long"],function(k){return t(k)})
 
 module.exports = require("./dist/Long.js");
 
-},{"./dist/Long.js":116}],118:[function(require,module,exports){
+},{"./dist/Long.js":117}],119:[function(require,module,exports){
 var debug = false;
 
 function pubKeyMatch (ar1, ar2){
@@ -30036,7 +30123,7 @@ ContentStore.prototype.insert = function(element, data){
 
 module.exports = ContentStore;
 
-},{}],119:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 var binarySearch = require("./../Utility/binarySearch.js")
   , ndn;
 
@@ -30257,7 +30344,7 @@ FIB.Entry = FibEntry;
 
 module.exports = FIB;
 
-},{"./../Utility/binarySearch.js":127}],120:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":128}],121:[function(require,module,exports){
 var ndn
   , Face
   , ndn = require("ndn-lib")
@@ -30389,7 +30476,7 @@ Interfaces.prototype.dispatch = function(element, faceFlag, callback){
 
 module.exports = Interfaces;
 
-},{"ndn-lib":51,"ndn-lib/js/encoding/tlv/tlv-decoder.js":68,"ndn-lib/js/encoding/tlv/tlv.js":71}],121:[function(require,module,exports){
+},{"ndn-lib":52,"ndn-lib/js/encoding/tlv/tlv-decoder.js":69,"ndn-lib/js/encoding/tlv/tlv.js":72}],122:[function(require,module,exports){
 var NameTreeNode = require("./NameTreeNode.js")
   , binaryIndexOf = require("./../Utility/binarySearch.js")
   , ndn
@@ -30565,7 +30652,7 @@ NameTree.prototype.findAllMatches = function(prefix, selector){
 
 module.exports = NameTree;
 
-},{"./../Utility/binarySearch.js":127,"./../Utility/debug.js":128,"./NameTreeNode.js":122}],122:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":128,"./../Utility/debug.js":129,"./NameTreeNode.js":123}],123:[function(require,module,exports){
 var binarySearch = require("./../Utility/binarySearch.js")
   , ndn
   , debug = require("./../Utility/debug.js");
@@ -30635,7 +30722,7 @@ NameTreeNode.prototype.removeChild = function(child){
 
 module.exports = NameTreeNode;
 
-},{"./../Utility/binarySearch.js":127,"./../Utility/debug.js":128}],123:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":128,"./../Utility/debug.js":129}],124:[function(require,module,exports){
 var binarySearch = require("./../Utility/binarySearch.js")
   , ndn;
 
@@ -30806,7 +30893,7 @@ PIT.prototype.lookup = function(data, name, matches, faceFlag){
 
 module.exports = PIT;
 
-},{"./../Utility/binarySearch.js":127}],124:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":128}],125:[function(require,module,exports){
 (function (Buffer){
 var ElementReader = require("ndn-lib/js/encoding/element-reader.js").ElementReader;
 var Transport = require("ndn-lib/js/transport/transport.js").Transport;
@@ -30884,7 +30971,7 @@ MessageChannelTransport.prototype.send = function(element)
 module.exports = MessageChannelTransport;
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":63,"ndn-lib/js/transport/transport.js":102}],125:[function(require,module,exports){
+},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":64,"ndn-lib/js/transport/transport.js":103}],126:[function(require,module,exports){
 (function (Buffer){
 var ElementReader = require("ndn-lib/js/encoding/element-reader.js").ElementReader;
 var Transport = require("ndn-lib/js/transport/transport.js").Transport;
@@ -31032,13 +31119,13 @@ DataChannelTransport.defineListener = function(subject, namespace){
 module.exports = DataChannelTransport;
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":63,"ndn-lib/js/transport/transport.js":102}],126:[function(require,module,exports){
+},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":64,"ndn-lib/js/transport/transport.js":103}],127:[function(require,module,exports){
 exports.MessageChannel = require("./MessageChannel.js");
 exports.WebRTCDataChannel = require("./WebRTCDataChannel.js");
 exports.WebSocketTransport = require("ndn-lib").TcpTransport;
 module.exports = exports;
 
-},{"./MessageChannel.js":124,"./WebRTCDataChannel.js":125,"ndn-lib":51}],127:[function(require,module,exports){
+},{"./MessageChannel.js":125,"./WebRTCDataChannel.js":126,"ndn-lib":52}],128:[function(require,module,exports){
   /**
  * Modified from https://gist.github.com/Wolfy87/5734530
  *
@@ -31127,13 +31214,13 @@ var binaryIndexOfPrefix = function(array, searchElement, prop) {
 
 module.exports = binaryIndexOfPrefix
 
-},{"./debug.js":128}],128:[function(require,module,exports){
+},{"./debug.js":129}],129:[function(require,module,exports){
 module.exports = {
   NameTree : false
   ,binaryIndexOf : true
 }
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 var contrib = require("ndn-contrib"), ndn = contrib.ndn;
 
 /**Main forwarder for Blanc
@@ -31236,11 +31323,11 @@ Forwarder.prototype.handleInterest = function(element, faceID, skipListen){
     function iterateListeners(){
       if (listeners.hasNext){
         var listener = listeners.next();
-        //console.log("iterate listeners, current =", listener.nextHops);
+        console.log("iterate listeners, current =", listener.nextHops);
         var blockingCallback, connectionCallback, nonBlockingCallbacks = [];
 
         for (var i = 0; i < listener.nextHops.length; i++){
-          //console.log(listener.nextHops[i]);
+          console.log(listener.nextHops[i]);
           if (Self.listenerCallbacks[listener.nextHops[i].faceID].blocking){
 
             blockingCallback = Self.listenerCallbacks[listener.nextHops[i].faceID].callback;
@@ -31300,14 +31387,14 @@ Forwarder.prototype.handleInterest = function(element, faceID, skipListen){
     }
 
     function forward(){
-      //console.log("not skipping forward");
+      console.log("not skipping forward");
       var cacheHit = Self.cache.check(interest);
 
       if (cacheHit){
         Self.interfaces.dispatch(cacheHit, 0 | (1<<faceID));
       } else if (!override.skipForward){
         var nextHopFlag = Self.fib.findAllNextHops(interest.name, faceID);
-        //console.log("nextHopFLag", nextHopFlag);
+        console.log("nextHopFLag", nextHopFlag);
         if (nextHopFlag){
           Self.interfaces.dispatch(element, nextHopFlag);
         }
@@ -31608,7 +31695,7 @@ Forwarder.prototype.unregisterPrefix = function(prefix, faceID){
 
 module.exports = Forwarder;
 
-},{"./node/ConnectionListeners.js":130,"./node/addConnection.js":132,"./node/createSuffix.js":133,"ndn-contrib":41}],130:[function(require,module,exports){
+},{"./node/ConnectionListeners.js":131,"./node/addConnection.js":133,"./node/createSuffix.js":134,"ndn-contrib":42}],131:[function(require,module,exports){
 var RTCPeerConnection = require("./adapter/adapter.js");
 
 module.exports = function(Forwarder){
@@ -31749,7 +31836,7 @@ module.exports = function(Forwarder){
   };
 };
 
-},{"./adapter/adapter.js":131}],131:[function(require,module,exports){
+},{"./adapter/adapter.js":132}],132:[function(require,module,exports){
 /*
  *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
  *
@@ -31977,7 +32064,7 @@ if (navigator.mozGetUserMedia) {
 
 module.exports = RTCPeerConnection;
 
-},{}],132:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 module.exports = function(Forwarder){
   Forwarder.prototype.addConnection = addConnection;
 };
@@ -32021,7 +32108,7 @@ function addConnection(objectOrURL, onOpen, onClosed){
   return this;
 }
 
-},{}],133:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 var RTCPeerConnection = require("./adapter/adapter.js");
 
 module.exports = function(Forwarder){
@@ -32106,55 +32193,55 @@ function createXSuffix(suffixCallback, connectionInfoCallback){
 
 }
 
-},{"./adapter/adapter.js":131}],134:[function(require,module,exports){
+},{"./adapter/adapter.js":132}],135:[function(require,module,exports){
 exports = require("./src/IO.js");
 module.exports = exports;
 
-},{"./src/IO.js":224}],135:[function(require,module,exports){
-module.exports=require(41)
-},{"./src/DataStructures/ContentStore.js":212,"./src/DataStructures/FIB.js":213,"./src/DataStructures/Interfaces.js":214,"./src/DataStructures/NameTree.js":215,"./src/DataStructures/PIT.js":217,"./src/Transports/node/export.js":220,"ndn-lib":145}],136:[function(require,module,exports){
-arguments[4][42][0].apply(exports,arguments)
-},{"jsbn":207}],137:[function(require,module,exports){
-module.exports=require(43)
-},{}],138:[function(require,module,exports){
+},{"./src/IO.js":225}],136:[function(require,module,exports){
+module.exports=require(42)
+},{"./src/DataStructures/ContentStore.js":213,"./src/DataStructures/FIB.js":214,"./src/DataStructures/Interfaces.js":215,"./src/DataStructures/NameTree.js":216,"./src/DataStructures/PIT.js":218,"./src/Transports/node/export.js":221,"ndn-lib":146}],137:[function(require,module,exports){
+arguments[4][43][0].apply(exports,arguments)
+},{"jsbn":208}],138:[function(require,module,exports){
 module.exports=require(44)
 },{}],139:[function(require,module,exports){
-arguments[4][45][0].apply(exports,arguments)
-},{"./sha256.js":144,"jsbn":207}],140:[function(require,module,exports){
+module.exports=require(45)
+},{}],140:[function(require,module,exports){
 arguments[4][46][0].apply(exports,arguments)
-},{"jsbn":207}],141:[function(require,module,exports){
+},{"./sha256.js":145,"jsbn":208}],141:[function(require,module,exports){
 arguments[4][47][0].apply(exports,arguments)
-},{"./rsa.js":140,"jsbn":207}],142:[function(require,module,exports){
+},{"jsbn":208}],142:[function(require,module,exports){
 arguments[4][48][0].apply(exports,arguments)
-},{"./asn1hex-1.1.js":136,"./base64.js":137,"./rsa2.js":141}],143:[function(require,module,exports){
+},{"./rsa.js":141,"jsbn":208}],143:[function(require,module,exports){
 arguments[4][49][0].apply(exports,arguments)
-},{"./rsapem-1.1.js":142,"jsbn":207}],144:[function(require,module,exports){
-module.exports=require(50)
-},{"./core.js":138}],145:[function(require,module,exports){
-arguments[4][51][0].apply(exports,arguments)
-},{"./js/closure.js":148,"./js/data.js":150,"./js/encoding/binary-xml-wire-format.js":154,"./js/encoding/data-utils.js":155,"./js/encoding/encoding-utils.js":158,"./js/encoding/protobuf-tlv.js":159,"./js/encoding/tlv-wire-format.js":161,"./js/encoding/wire-format.js":166,"./js/exclude.js":167,"./js/face.js":169,"./js/forwarding-flags.js":171,"./js/interest.js":172,"./js/key-locator.js":173,"./js/key.js":174,"./js/meta-info.js":176,"./js/name.js":177,"./js/publisher-public-key-digest.js":179,"./js/security/identity/identity-manager.js":182,"./js/security/identity/identity-storage.js":183,"./js/security/identity/memory-identity-storage.js":184,"./js/security/identity/memory-private-key-storage.js":185,"./js/security/key-chain.js":187,"./js/security/key-manager.js":188,"./js/security/policy/no-verify-policy-manager.js":189,"./js/security/policy/policy-manager.js":190,"./js/security/policy/self-verify-policy-manager.js":191,"./js/security/policy/validation-request.js":192,"./js/security/security-exception.js":193,"./js/security/security-types.js":194,"./js/sha256-with-rsa-signature.js":195,"./js/transport/tcp-transport.js":146,"./js/transport/unix-transport.js":197,"./js/util/blob.js":199,"./js/util/memory-content-cache.js":202,"./js/util/name-enumeration.js":203,"./js/util/ndn-time.js":205}],146:[function(require,module,exports){
+},{"./asn1hex-1.1.js":137,"./base64.js":138,"./rsa2.js":142}],144:[function(require,module,exports){
+arguments[4][50][0].apply(exports,arguments)
+},{"./rsapem-1.1.js":143,"jsbn":208}],145:[function(require,module,exports){
+module.exports=require(51)
+},{"./core.js":139}],146:[function(require,module,exports){
 arguments[4][52][0].apply(exports,arguments)
-},{"./transport/web-socket-transport":198}],147:[function(require,module,exports){
+},{"./js/closure.js":149,"./js/data.js":151,"./js/encoding/binary-xml-wire-format.js":155,"./js/encoding/data-utils.js":156,"./js/encoding/encoding-utils.js":159,"./js/encoding/protobuf-tlv.js":160,"./js/encoding/tlv-wire-format.js":162,"./js/encoding/wire-format.js":167,"./js/exclude.js":168,"./js/face.js":170,"./js/forwarding-flags.js":172,"./js/interest.js":173,"./js/key-locator.js":174,"./js/key.js":175,"./js/meta-info.js":177,"./js/name.js":178,"./js/publisher-public-key-digest.js":180,"./js/security/identity/identity-manager.js":183,"./js/security/identity/identity-storage.js":184,"./js/security/identity/memory-identity-storage.js":185,"./js/security/identity/memory-private-key-storage.js":186,"./js/security/key-chain.js":188,"./js/security/key-manager.js":189,"./js/security/policy/no-verify-policy-manager.js":190,"./js/security/policy/policy-manager.js":191,"./js/security/policy/self-verify-policy-manager.js":192,"./js/security/policy/validation-request.js":193,"./js/security/security-exception.js":194,"./js/security/security-types.js":195,"./js/sha256-with-rsa-signature.js":196,"./js/transport/tcp-transport.js":147,"./js/transport/unix-transport.js":198,"./js/util/blob.js":200,"./js/util/memory-content-cache.js":203,"./js/util/name-enumeration.js":204,"./js/util/ndn-time.js":206}],147:[function(require,module,exports){
 arguments[4][53][0].apply(exports,arguments)
-},{"../contrib/securityLib/asn1hex-1.1.js":136,"../contrib/securityLib/base64.js":137,"../contrib/securityLib/crypto-1.0.js":139,"../contrib/securityLib/rsasign-1.2.js":143,"./key.js":174,"buffer":3}],148:[function(require,module,exports){
-module.exports=require(54)
-},{}],149:[function(require,module,exports){
+},{"./transport/web-socket-transport":199}],148:[function(require,module,exports){
+arguments[4][54][0].apply(exports,arguments)
+},{"../contrib/securityLib/asn1hex-1.1.js":137,"../contrib/securityLib/base64.js":138,"../contrib/securityLib/crypto-1.0.js":140,"../contrib/securityLib/rsasign-1.2.js":144,"./key.js":175,"buffer":3}],149:[function(require,module,exports){
 module.exports=require(55)
-},{"./encoding/wire-format.js":166,"./forwarding-flags.js":171,"./name.js":177}],150:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 module.exports=require(56)
-},{"./crypto.js":147,"./encoding/binary-xml-encoder.js":152,"./encoding/binary-xml-wire-format.js":154,"./encoding/data-utils.js":155,"./encoding/wire-format.js":166,"./key-locator.js":173,"./meta-info.js":176,"./name.js":177,"./security/key-manager.js":188,"./sha256-with-rsa-signature.js":195,"./util/blob.js":199,"./util/ndn-protoco-id-tags.js":204,"./util/signed-blob.js":206,"buffer":3}],151:[function(require,module,exports){
+},{"./encoding/wire-format.js":167,"./forwarding-flags.js":172,"./name.js":178}],151:[function(require,module,exports){
 module.exports=require(57)
-},{"../log.js":175,"../util/ndn-protoco-id-tags.js":204,"../util/ndn-time.js":205,"./data-utils.js":155,"./decoding-exception.js":156,"buffer":3}],152:[function(require,module,exports){
+},{"./crypto.js":148,"./encoding/binary-xml-encoder.js":153,"./encoding/binary-xml-wire-format.js":155,"./encoding/data-utils.js":156,"./encoding/wire-format.js":167,"./key-locator.js":174,"./meta-info.js":177,"./name.js":178,"./security/key-manager.js":189,"./sha256-with-rsa-signature.js":196,"./util/blob.js":200,"./util/ndn-protoco-id-tags.js":205,"./util/signed-blob.js":207,"buffer":3}],152:[function(require,module,exports){
 module.exports=require(58)
-},{"../log.js":175,"../util/dynamic-buffer.js":201,"../util/ndn-protoco-id-tags.js":204,"./data-utils.js":155}],153:[function(require,module,exports){
+},{"../log.js":176,"../util/ndn-protoco-id-tags.js":205,"../util/ndn-time.js":206,"./data-utils.js":156,"./decoding-exception.js":157,"buffer":3}],153:[function(require,module,exports){
 module.exports=require(59)
-},{"../util/dynamic-buffer.js":201,"./binary-xml-decoder.js":151}],154:[function(require,module,exports){
+},{"../log.js":176,"../util/dynamic-buffer.js":202,"../util/ndn-protoco-id-tags.js":205,"./data-utils.js":156}],154:[function(require,module,exports){
 module.exports=require(60)
-},{"../exclude.js":167,"../key-locator.js":173,"../meta-info.js":176,"../name.js":177,"../publisher-public-key-digest.js":179,"../sha256-with-rsa-signature.js":195,"../util/blob.js":199,"../util/ndn-protoco-id-tags.js":204,"./binary-xml-decoder.js":151,"./binary-xml-encoder.js":152,"./data-utils.js":155,"./wire-format.js":166}],155:[function(require,module,exports){
+},{"../util/dynamic-buffer.js":202,"./binary-xml-decoder.js":152}],155:[function(require,module,exports){
 module.exports=require(61)
-},{"buffer":3}],156:[function(require,module,exports){
+},{"../exclude.js":168,"../key-locator.js":174,"../meta-info.js":177,"../name.js":178,"../publisher-public-key-digest.js":180,"../sha256-with-rsa-signature.js":196,"../util/blob.js":200,"../util/ndn-protoco-id-tags.js":205,"./binary-xml-decoder.js":152,"./binary-xml-encoder.js":153,"./data-utils.js":156,"./wire-format.js":167}],156:[function(require,module,exports){
 module.exports=require(62)
-},{}],157:[function(require,module,exports){
+},{"buffer":3}],157:[function(require,module,exports){
+module.exports=require(63)
+},{}],158:[function(require,module,exports){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
  * @author: Jeff Thompson <jefft0@remap.ucla.edu>
@@ -32265,87 +32352,87 @@ ElementReader.prototype.onReceivedData = function(/* Buffer */ data)
   }
 };
 
-},{"../log.js":175,"./binary-xml-structure-decoder.js":153,"./data-utils.js":155,"./tlv/tlv-structure-decoder.js":164,"./tlv/tlv.js":165}],158:[function(require,module,exports){
-module.exports=require(64)
-},{"../data.js":150,"../face-instance.js":168,"../forwarding-entry.js":170,"../interest.js":172,"../key-locator.js":173,"../key.js":174,"../log.js":175,"./binary-xml-decoder.js":151,"./binary-xml-encoder.js":152,"./data-utils.js":155,"./wire-format.js":166}],159:[function(require,module,exports){
-arguments[4][65][0].apply(exports,arguments)
-},{"../util/blob.js":199,"./tlv/tlv-decoder.js":162,"./tlv/tlv-encoder.js":163,"protobufjs/dist/ProtoBuf.js":208}],160:[function(require,module,exports){
-module.exports=require(66)
-},{"../crypto.js":147,"../exclude.js":167,"../forwarding-flags.js":171,"../key-locator.js":173,"../meta-info.js":176,"../publisher-public-key-digest.js":179,"../sha256-with-rsa-signature.js":195,"../util/blob.js":199,"./decoding-exception.js":156,"./tlv/tlv-decoder.js":162,"./tlv/tlv-encoder.js":163,"./tlv/tlv.js":165,"./wire-format.js":166,"buffer":3}],161:[function(require,module,exports){
+},{"../log.js":176,"./binary-xml-structure-decoder.js":154,"./data-utils.js":156,"./tlv/tlv-structure-decoder.js":165,"./tlv/tlv.js":166}],159:[function(require,module,exports){
+module.exports=require(65)
+},{"../data.js":151,"../face-instance.js":169,"../forwarding-entry.js":171,"../interest.js":173,"../key-locator.js":174,"../key.js":175,"../log.js":176,"./binary-xml-decoder.js":152,"./binary-xml-encoder.js":153,"./data-utils.js":156,"./wire-format.js":167}],160:[function(require,module,exports){
+arguments[4][66][0].apply(exports,arguments)
+},{"../util/blob.js":200,"./tlv/tlv-decoder.js":163,"./tlv/tlv-encoder.js":164,"protobufjs/dist/ProtoBuf.js":209}],161:[function(require,module,exports){
 module.exports=require(67)
-},{"./tlv-0_1-wire-format.js":160,"./wire-format.js":166}],162:[function(require,module,exports){
+},{"../crypto.js":148,"../exclude.js":168,"../forwarding-flags.js":172,"../key-locator.js":174,"../meta-info.js":177,"../publisher-public-key-digest.js":180,"../sha256-with-rsa-signature.js":196,"../util/blob.js":200,"./decoding-exception.js":157,"./tlv/tlv-decoder.js":163,"./tlv/tlv-encoder.js":164,"./tlv/tlv.js":166,"./wire-format.js":167,"buffer":3}],162:[function(require,module,exports){
 module.exports=require(68)
-},{"../decoding-exception.js":156}],163:[function(require,module,exports){
+},{"./tlv-0_1-wire-format.js":161,"./wire-format.js":167}],163:[function(require,module,exports){
 module.exports=require(69)
-},{"../../util/dynamic-buffer.js":201}],164:[function(require,module,exports){
+},{"../decoding-exception.js":157}],164:[function(require,module,exports){
 module.exports=require(70)
-},{"./tlv-decoder.js":162,"buffer":3}],165:[function(require,module,exports){
+},{"../../util/dynamic-buffer.js":202}],165:[function(require,module,exports){
 module.exports=require(71)
-},{}],166:[function(require,module,exports){
+},{"./tlv-decoder.js":163,"buffer":3}],166:[function(require,module,exports){
 module.exports=require(72)
-},{"./tlv-wire-format.js":161}],167:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 module.exports=require(73)
-},{"./encoding/binary-xml-decoder.js":151,"./encoding/binary-xml-encoder.js":152,"./encoding/data-utils.js":155,"./name.js":177,"./util/blob.js":199,"./util/ndn-protoco-id-tags.js":204}],168:[function(require,module,exports){
+},{"./tlv-wire-format.js":162}],168:[function(require,module,exports){
 module.exports=require(74)
-},{"./publisher-public-key-digest.js":179,"./util/ndn-protoco-id-tags.js":204}],169:[function(require,module,exports){
-arguments[4][75][0].apply(exports,arguments)
-},{"./closure.js":148,"./control-parameters.js":149,"./data.js":150,"./encoding/binary-xml-decoder.js":151,"./encoding/binary-xml-encoder.js":152,"./encoding/binary-xml-wire-format.js":154,"./encoding/data-utils.js":155,"./encoding/tlv-wire-format.js":161,"./encoding/tlv/tlv-decoder.js":162,"./encoding/tlv/tlv.js":165,"./forwarding-entry.js":170,"./forwarding-flags.js":171,"./interest.js":172,"./key-locator.js":173,"./key.js":174,"./log.js":175,"./meta-info.js":176,"./name.js":177,"./security/key-manager.js":188,"./transport/tcp-transport.js":146,"./transport/transport.js":196,"./transport/unix-transport.js":197,"./util/command-interest-generator.js":200,"./util/ndn-protoco-id-tags.js":204,"buffer":3,"crypto":9,"fs":1}],170:[function(require,module,exports){
-module.exports=require(76)
-},{"./forwarding-flags.js":171,"./name.js":177,"./publisher-public-key-digest.js":179,"./util/ndn-protoco-id-tags.js":204}],171:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":152,"./encoding/binary-xml-encoder.js":153,"./encoding/data-utils.js":156,"./name.js":178,"./util/blob.js":200,"./util/ndn-protoco-id-tags.js":205}],169:[function(require,module,exports){
+module.exports=require(75)
+},{"./publisher-public-key-digest.js":180,"./util/ndn-protoco-id-tags.js":205}],170:[function(require,module,exports){
+arguments[4][76][0].apply(exports,arguments)
+},{"./closure.js":149,"./control-parameters.js":150,"./data.js":151,"./encoding/binary-xml-decoder.js":152,"./encoding/binary-xml-encoder.js":153,"./encoding/binary-xml-wire-format.js":155,"./encoding/data-utils.js":156,"./encoding/tlv-wire-format.js":162,"./encoding/tlv/tlv-decoder.js":163,"./encoding/tlv/tlv.js":166,"./forwarding-entry.js":171,"./forwarding-flags.js":172,"./interest.js":173,"./key-locator.js":174,"./key.js":175,"./log.js":176,"./meta-info.js":177,"./name.js":178,"./security/key-manager.js":189,"./transport/tcp-transport.js":147,"./transport/transport.js":197,"./transport/unix-transport.js":198,"./util/command-interest-generator.js":201,"./util/ndn-protoco-id-tags.js":205,"buffer":3,"crypto":9,"fs":1}],171:[function(require,module,exports){
 module.exports=require(77)
-},{}],172:[function(require,module,exports){
+},{"./forwarding-flags.js":172,"./name.js":178,"./publisher-public-key-digest.js":180,"./util/ndn-protoco-id-tags.js":205}],172:[function(require,module,exports){
 module.exports=require(78)
-},{"./encoding/binary-xml-wire-format.js":154,"./encoding/wire-format.js":166,"./exclude.js":167,"./key-locator.js":173,"./name.js":177,"./publisher-public-key-digest.js":179,"./util/blob.js":199,"buffer":3}],173:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 module.exports=require(79)
-},{"./log.js":175,"./name.js":177,"./publisher-id.js":178,"./util/blob.js":199,"./util/ndn-protoco-id-tags.js":204,"buffer":3}],174:[function(require,module,exports){
+},{"./encoding/binary-xml-wire-format.js":155,"./encoding/wire-format.js":167,"./exclude.js":168,"./key-locator.js":174,"./name.js":178,"./publisher-public-key-digest.js":180,"./util/blob.js":200,"buffer":3}],174:[function(require,module,exports){
 module.exports=require(80)
-},{"./encoding/data-utils.js":155,"./log.js":175,"buffer":3,"crypto":9}],175:[function(require,module,exports){
+},{"./log.js":176,"./name.js":178,"./publisher-id.js":179,"./util/blob.js":200,"./util/ndn-protoco-id-tags.js":205,"buffer":3}],175:[function(require,module,exports){
 module.exports=require(81)
-},{}],176:[function(require,module,exports){
+},{"./encoding/data-utils.js":156,"./log.js":176,"buffer":3,"crypto":9}],176:[function(require,module,exports){
 module.exports=require(82)
-},{"./encoding/binary-xml-decoder.js":151,"./encoding/binary-xml-encoder.js":152,"./key-locator.js":173,"./log.js":175,"./name.js":177,"./publisher-public-key-digest.js":179,"./security/key-manager.js":188,"./util/blob.js":199,"./util/ndn-protoco-id-tags.js":204,"./util/ndn-time.js":205,"buffer":3}],177:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 module.exports=require(83)
-},{"./encoding/binary-xml-decoder.js":151,"./encoding/binary-xml-encoder.js":152,"./encoding/data-utils.js":155,"./encoding/tlv/tlv-encoder.js":163,"./log.js":175,"./util/blob.js":199,"./util/ndn-protoco-id-tags.js":204,"buffer":3}],178:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":152,"./encoding/binary-xml-encoder.js":153,"./key-locator.js":174,"./log.js":176,"./name.js":178,"./publisher-public-key-digest.js":180,"./security/key-manager.js":189,"./util/blob.js":200,"./util/ndn-protoco-id-tags.js":205,"./util/ndn-time.js":206,"buffer":3}],178:[function(require,module,exports){
 module.exports=require(84)
-},{"./encoding/decoding-exception.js":156,"./util/ndn-protoco-id-tags.js":204}],179:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":152,"./encoding/binary-xml-encoder.js":153,"./encoding/data-utils.js":156,"./encoding/tlv/tlv-encoder.js":164,"./log.js":176,"./util/blob.js":200,"./util/ndn-protoco-id-tags.js":205,"buffer":3}],179:[function(require,module,exports){
 module.exports=require(85)
-},{"./log.js":175,"./util/ndn-protoco-id-tags.js":204}],180:[function(require,module,exports){
+},{"./encoding/decoding-exception.js":157,"./util/ndn-protoco-id-tags.js":205}],180:[function(require,module,exports){
 module.exports=require(86)
-},{}],181:[function(require,module,exports){
+},{"./log.js":176,"./util/ndn-protoco-id-tags.js":205}],181:[function(require,module,exports){
 module.exports=require(87)
-},{"../security-exception.js":193,"../security-types.js":194}],182:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 module.exports=require(88)
-},{"../../data.js":150,"../../encoding/wire-format.js":166,"../../key-locator.js":173,"../../name.js":177,"../../sha256-with-rsa-signature.js":195,"../security-exception.js":193,"buffer":3}],183:[function(require,module,exports){
+},{"../security-exception.js":194,"../security-types.js":195}],183:[function(require,module,exports){
 module.exports=require(89)
-},{"../../name.js":177,"../security-exception.js":193}],184:[function(require,module,exports){
+},{"../../data.js":151,"../../encoding/wire-format.js":167,"../../key-locator.js":174,"../../name.js":178,"../../sha256-with-rsa-signature.js":196,"../security-exception.js":194,"buffer":3}],184:[function(require,module,exports){
 module.exports=require(90)
-},{"../../data.js":150,"../../encoding/data-utils.js":155,"../../name.js":177,"../../util/blob.js":199,"../security-exception.js":193,"../security-types.js":194,"./identity-storage.js":183}],185:[function(require,module,exports){
+},{"../../name.js":178,"../security-exception.js":194}],185:[function(require,module,exports){
 module.exports=require(91)
-},{"../../encoding/data-utils.js":155,"../../util/blob.js":199,"../certificate/public-key.js":181,"../security-exception.js":193,"../security-types.js":194,"./private-key-storage.js":186,"buffer":3,"crypto":9}],186:[function(require,module,exports){
+},{"../../data.js":151,"../../encoding/data-utils.js":156,"../../name.js":178,"../../util/blob.js":200,"../security-exception.js":194,"../security-types.js":195,"./identity-storage.js":184}],186:[function(require,module,exports){
 module.exports=require(92)
-},{}],187:[function(require,module,exports){
+},{"../../encoding/data-utils.js":156,"../../util/blob.js":200,"../certificate/public-key.js":182,"../security-exception.js":194,"../security-types.js":195,"./private-key-storage.js":187,"buffer":3,"crypto":9}],187:[function(require,module,exports){
 module.exports=require(93)
-},{"../data.js":150,"../encoding/tlv/tlv-encoder.js":163,"../encoding/tlv/tlv.js":165,"../encoding/wire-format.js":166,"../interest.js":172,"../key-locator.js":173,"../name.js":177,"../sha256-with-rsa-signature.js":195,"./security-exception.js":193}],188:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 module.exports=require(94)
-},{"../key.js":174}],189:[function(require,module,exports){
+},{"../data.js":151,"../encoding/tlv/tlv-encoder.js":164,"../encoding/tlv/tlv.js":166,"../encoding/wire-format.js":167,"../interest.js":173,"../key-locator.js":174,"../name.js":178,"../sha256-with-rsa-signature.js":196,"./security-exception.js":194}],189:[function(require,module,exports){
 module.exports=require(95)
-},{"../../name.js":177,"./policy-manager.js":190}],190:[function(require,module,exports){
+},{"../key.js":175}],190:[function(require,module,exports){
 module.exports=require(96)
-},{}],191:[function(require,module,exports){
+},{"../../name.js":178,"./policy-manager.js":191}],191:[function(require,module,exports){
 module.exports=require(97)
-},{"../../data.js":150,"../../encoding/data-utils.js":155,"../../encoding/wire-format.js":166,"../../key-locator.js":173,"../../name.js":177,"../certificate/identity-certificate.js":180,"../security-exception.js":193,"./policy-manager.js":190,"crypto":9}],192:[function(require,module,exports){
+},{}],192:[function(require,module,exports){
 module.exports=require(98)
-},{}],193:[function(require,module,exports){
+},{"../../data.js":151,"../../encoding/data-utils.js":156,"../../encoding/wire-format.js":167,"../../key-locator.js":174,"../../name.js":178,"../certificate/identity-certificate.js":181,"../security-exception.js":194,"./policy-manager.js":191,"crypto":9}],193:[function(require,module,exports){
 module.exports=require(99)
 },{}],194:[function(require,module,exports){
 module.exports=require(100)
 },{}],195:[function(require,module,exports){
 module.exports=require(101)
-},{"./encoding/binary-xml-decoder.js":151,"./encoding/binary-xml-encoder.js":152,"./key-locator.js":173,"./log.js":175,"./util/blob.js":199,"./util/ndn-protoco-id-tags.js":204,"buffer":3}],196:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 module.exports=require(102)
-},{}],197:[function(require,module,exports){
-arguments[4][103][0].apply(exports,arguments)
-},{"../encoding/element-reader.js":157,"../log.js":175,"./transport.js":196,"buffer":3,"net":1}],198:[function(require,module,exports){
+},{"./encoding/binary-xml-decoder.js":152,"./encoding/binary-xml-encoder.js":153,"./key-locator.js":174,"./log.js":176,"./util/blob.js":200,"./util/ndn-protoco-id-tags.js":205,"buffer":3}],197:[function(require,module,exports){
+module.exports=require(103)
+},{}],198:[function(require,module,exports){
+arguments[4][104][0].apply(exports,arguments)
+},{"../encoding/element-reader.js":158,"../log.js":176,"./transport.js":197,"buffer":3,"net":1}],199:[function(require,module,exports){
 (function (Buffer){
 /**
  * Copyright (C) 2013-2014 Regents of the University of California.
@@ -32561,23 +32648,23 @@ WebSocketTransport.prototype.close = function()
 }
 
 }).call(this,require("buffer").Buffer)
-},{"../encoding/element-reader.js":157,"../log.js":175,"./transport.js":196,"buffer":3}],199:[function(require,module,exports){
-module.exports=require(105)
-},{"buffer":3}],200:[function(require,module,exports){
+},{"../encoding/element-reader.js":158,"../log.js":176,"./transport.js":197,"buffer":3}],200:[function(require,module,exports){
 module.exports=require(106)
-},{"../encoding/tlv/tlv-encoder.js":163,"../encoding/wire-format.js":166,"./blob.js":199,"crypto":9}],201:[function(require,module,exports){
+},{"buffer":3}],201:[function(require,module,exports){
 module.exports=require(107)
-},{"buffer":3}],202:[function(require,module,exports){
+},{"../encoding/tlv/tlv-encoder.js":164,"../encoding/wire-format.js":167,"./blob.js":200,"crypto":9}],202:[function(require,module,exports){
 module.exports=require(108)
-},{"../name.js":177}],203:[function(require,module,exports){
+},{"buffer":3}],203:[function(require,module,exports){
 module.exports=require(109)
-},{"../encoding/binary-xml-decoder.js":151,"../encoding/data-utils.js":155,"../name.js":177,"./ndn-protoco-id-tags.js":204,"buffer":3}],204:[function(require,module,exports){
+},{"../name.js":178}],204:[function(require,module,exports){
 module.exports=require(110)
-},{}],205:[function(require,module,exports){
+},{"../encoding/binary-xml-decoder.js":152,"../encoding/data-utils.js":156,"../name.js":178,"./ndn-protoco-id-tags.js":205,"buffer":3}],205:[function(require,module,exports){
 module.exports=require(111)
-},{"../log.js":175}],206:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 module.exports=require(112)
-},{"./blob.js":199}],207:[function(require,module,exports){
+},{"../log.js":176}],207:[function(require,module,exports){
+module.exports=require(113)
+},{"./blob.js":200}],208:[function(require,module,exports){
 (function(){
     
     // Copyright (c) 2005  Tom Wu
@@ -33804,7 +33891,7 @@ module.exports=require(112)
     }
     
 }).call(this);
-},{}],208:[function(require,module,exports){
+},{}],209:[function(require,module,exports){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
 
@@ -37902,7 +37989,7 @@ module.exports=require(112)
 
 })(this);
 
-},{"bytebuffer":209,"fs":1,"path":22}],209:[function(require,module,exports){
+},{"bytebuffer":210,"fs":1,"path":22}],210:[function(require,module,exports){
 /*
  ByteBuffer.js (c) 2013-2014 Daniel Wirtz <dcode@dcode.io>
  This version of ByteBuffer.js uses an ArrayBuffer (AB) as its backing buffer and is compatible with modern browsers.
@@ -37991,33 +38078,33 @@ k.a=function(a){var b=0;return function(){return b<a.length?a.charCodeAt(b++):nu
 a>>>=0;if("number"!==typeof b||0!==b%1)throw new TypeError("Illegal end: Not an integer");b>>>=0;if(0>a||a>b||b>this.buffer.byteLength)throw new RangeError("Illegal range: 0 <= "+a+" <= "+b+" <= "+this.buffer.byteLength);}var c=this,d;try{k.d(function(){return a<b?c.view.getUint8(a++):null},d=k.c())}catch(h){if(a!==b)throw new RangeError("Illegal range: Truncated data, "+a+" != "+b);}return d()};d.fromUTF8=function(a,b,c){if(!c&&"string"!==typeof a)throw new TypeError("Illegal str: Not a string");
 var e=new d(k.b(k.a(a),!0)[1],b,c),h=0;k.e(k.a(a),function(a){e.view.setUint8(h++,a)});e.limit=h;return e};return d}"undefined"!==typeof module&&module.exports?module.exports=s(require("long")):"function"===typeof define&&define.amd?define("ByteBuffer",["Long"],function(l){return s(l)}):(r.dcodeIO=r.dcodeIO||{}).ByteBuffer=s(r.dcodeIO.Long)})(this);
 
-},{"long":211}],210:[function(require,module,exports){
-module.exports=require(116)
-},{}],211:[function(require,module,exports){
+},{"long":212}],211:[function(require,module,exports){
 module.exports=require(117)
-},{"./dist/Long.js":210}],212:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 module.exports=require(118)
-},{}],213:[function(require,module,exports){
+},{"./dist/Long.js":211}],213:[function(require,module,exports){
 module.exports=require(119)
-},{"./../Utility/binarySearch.js":221}],214:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 module.exports=require(120)
-},{"ndn-lib":145,"ndn-lib/js/encoding/tlv/tlv-decoder.js":162,"ndn-lib/js/encoding/tlv/tlv.js":165}],215:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":222}],215:[function(require,module,exports){
 module.exports=require(121)
-},{"./../Utility/binarySearch.js":221,"./../Utility/debug.js":222,"./NameTreeNode.js":216}],216:[function(require,module,exports){
+},{"ndn-lib":146,"ndn-lib/js/encoding/tlv/tlv-decoder.js":163,"ndn-lib/js/encoding/tlv/tlv.js":166}],216:[function(require,module,exports){
 module.exports=require(122)
-},{"./../Utility/binarySearch.js":221,"./../Utility/debug.js":222}],217:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":222,"./../Utility/debug.js":223,"./NameTreeNode.js":217}],217:[function(require,module,exports){
 module.exports=require(123)
-},{"./../Utility/binarySearch.js":221}],218:[function(require,module,exports){
-arguments[4][124][0].apply(exports,arguments)
-},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":157,"ndn-lib/js/transport/transport.js":196}],219:[function(require,module,exports){
+},{"./../Utility/binarySearch.js":222,"./../Utility/debug.js":223}],218:[function(require,module,exports){
+module.exports=require(124)
+},{"./../Utility/binarySearch.js":222}],219:[function(require,module,exports){
 arguments[4][125][0].apply(exports,arguments)
-},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":157,"ndn-lib/js/transport/transport.js":196}],220:[function(require,module,exports){
+},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":158,"ndn-lib/js/transport/transport.js":197}],220:[function(require,module,exports){
 arguments[4][126][0].apply(exports,arguments)
-},{"./MessageChannel.js":218,"./WebRTCDataChannel.js":219,"ndn-lib":145}],221:[function(require,module,exports){
-module.exports=require(127)
-},{"./debug.js":222}],222:[function(require,module,exports){
+},{"buffer":3,"ndn-lib/js/encoding/element-reader.js":158,"ndn-lib/js/transport/transport.js":197}],221:[function(require,module,exports){
+arguments[4][127][0].apply(exports,arguments)
+},{"./MessageChannel.js":219,"./WebRTCDataChannel.js":220,"ndn-lib":146}],222:[function(require,module,exports){
 module.exports=require(128)
-},{}],223:[function(require,module,exports){
+},{"./debug.js":223}],223:[function(require,module,exports){
+module.exports=require(129)
+},{}],224:[function(require,module,exports){
 var ndn, contrib;
 
 /** Fetcher object
@@ -38212,7 +38299,7 @@ Fetcher.prototype.getParts = function(uri, interestLifetimeMilliseconds, callbac
 
 module.exports = Fetcher;
 
-},{"./node/assembleFile.js":226}],224:[function(require,module,exports){
+},{"./node/assembleFile.js":227}],225:[function(require,module,exports){
 var Publisher = require("./Publisher.js"),
     Fetcher = require("./Fetcher.js"),
     contrib = require("ndn-contrib"),
@@ -38334,7 +38421,7 @@ IO.prototype.addListener = function(prefix, connectionParameters){
 IO.prototype.handleInterest = function(element, faceID){
   var interest = new ndn.Interest();
   interest.wireDecode(element);
-  //console.log(this)
+  //console.log("IO module got interest",interest.name.toUri())
   var Self = this;
   this.contentStore.check(interest, function(result){
     //console.log("got result?", interest.name.toUri(), result)
@@ -38446,7 +38533,7 @@ IO.prototype.fetchAllSegments = function(firstSegmentInterest, onEachData, onTim
 
 module.exports = IO;
 
-},{"./Fetcher.js":223,"./Publisher.js":225,"ndn-contrib":135,"ndn-lib/js/transport/unix-transport.js":218}],225:[function(require,module,exports){
+},{"./Fetcher.js":224,"./Publisher.js":226,"ndn-contrib":136,"ndn-lib/js/transport/unix-transport.js":219}],226:[function(require,module,exports){
 (function (Buffer){
 var ndn, contrib;
 
@@ -38579,6 +38666,7 @@ Publisher.prototype.publishFile = function(callback){
     for (var i = 0; i < length; i++){
       var n = new ndn.Name(name);
       n.appendSegment(i);
+      console.log(n.toUri())
 
       var chunk = buffer.slice(i * 8000, (i + 1) * 8000)
         , d = new ndn.Data(n, new ndn.SignedInfo(), chunk);
@@ -38647,12 +38735,12 @@ Publisher.prototype.publishString = function(){
 module.exports = Publisher;
 
 }).call(this,require("buffer").Buffer)
-},{"./node/readFile.js":227,"buffer":3}],226:[function(require,module,exports){
+},{"./node/readFile.js":228,"buffer":3}],227:[function(require,module,exports){
 module.exports = function(contentArray, mimeType){
   return new Blob(contentArray, {type: mimeType});
 };
 
-},{}],227:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 (function (Buffer){
 
 module.exports = function(file, callback){
@@ -38672,7 +38760,7 @@ module.exports = function(file, callback){
 };
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],228:[function(require,module,exports){
+},{"buffer":3}],229:[function(require,module,exports){
 (function (Buffer){
 module.exports = Level
 
@@ -38846,7 +38934,7 @@ var checkKeyValue = Level.prototype._checkKeyValue = function (obj, type) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./iterator":229,"abstract-leveldown":232,"buffer":3,"idb-wrapper":234,"isbuffer":235,"typedarray-to-buffer":237,"util":38,"xtend":239}],229:[function(require,module,exports){
+},{"./iterator":230,"abstract-leveldown":233,"buffer":3,"idb-wrapper":235,"isbuffer":236,"typedarray-to-buffer":238,"util":38,"xtend":240}],230:[function(require,module,exports){
 var util = require('util')
 var AbstractIterator  = require('abstract-leveldown').AbstractIterator
 var ltgt = require('ltgt')
@@ -38913,7 +39001,7 @@ Iterator.prototype._next = function (callback) {
   this.callback = callback
 }
 
-},{"abstract-leveldown":232,"ltgt":236,"util":38}],230:[function(require,module,exports){
+},{"abstract-leveldown":233,"ltgt":237,"util":38}],231:[function(require,module,exports){
 (function (process){
 /* Copyright (c) 2013 Rod Vagg, MIT License */
 
@@ -38997,7 +39085,7 @@ AbstractChainedBatch.prototype.write = function (options, callback) {
 
 module.exports = AbstractChainedBatch
 }).call(this,require('_process'))
-},{"_process":23}],231:[function(require,module,exports){
+},{"_process":23}],232:[function(require,module,exports){
 (function (process){
 /* Copyright (c) 2013 Rod Vagg, MIT License */
 
@@ -39050,7 +39138,7 @@ AbstractIterator.prototype.end = function (callback) {
 module.exports = AbstractIterator
 
 }).call(this,require('_process'))
-},{"_process":23}],232:[function(require,module,exports){
+},{"_process":23}],233:[function(require,module,exports){
 (function (process,Buffer){
 /* Copyright (c) 2013 Rod Vagg, MIT License */
 
@@ -39312,7 +39400,7 @@ module.exports.AbstractIterator     = AbstractIterator
 module.exports.AbstractChainedBatch = AbstractChainedBatch
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./abstract-chained-batch":230,"./abstract-iterator":231,"_process":23,"buffer":3,"xtend":233}],233:[function(require,module,exports){
+},{"./abstract-chained-batch":231,"./abstract-iterator":232,"_process":23,"buffer":3,"xtend":234}],234:[function(require,module,exports){
 module.exports = extend
 
 function extend() {
@@ -39331,7 +39419,7 @@ function extend() {
     return target
 }
 
-},{}],234:[function(require,module,exports){
+},{}],235:[function(require,module,exports){
 /*global window:false, self:false, define:false, module:false */
 
 /**
@@ -40551,7 +40639,7 @@ function extend() {
 
 }, this);
 
-},{}],235:[function(require,module,exports){
+},{}],236:[function(require,module,exports){
 var Buffer = require('buffer').Buffer;
 
 module.exports = isBuffer;
@@ -40561,7 +40649,7 @@ function isBuffer (o) {
     || /\[object (.+Array|Array.+)\]/.test(Object.prototype.toString.call(o));
 }
 
-},{"buffer":3}],236:[function(require,module,exports){
+},{"buffer":3}],237:[function(require,module,exports){
 (function (Buffer){
 
 exports.compare = function (a, b) {
@@ -40660,7 +40748,7 @@ exports.filter = function (range, compare) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],237:[function(require,module,exports){
+},{"buffer":3}],238:[function(require,module,exports){
 (function (Buffer){
 /**
  * Convert a typed array to a Buffer without a copy
@@ -40682,7 +40770,7 @@ module.exports = function (arr) {
   }
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],238:[function(require,module,exports){
+},{"buffer":3}],239:[function(require,module,exports){
 module.exports = hasKeys
 
 function hasKeys(source) {
@@ -40691,7 +40779,7 @@ function hasKeys(source) {
         typeof source === "function")
 }
 
-},{}],239:[function(require,module,exports){
+},{}],240:[function(require,module,exports){
 var Keys = require("object-keys")
 var hasKeys = require("./has-keys")
 
@@ -40718,7 +40806,7 @@ function extend() {
     return target
 }
 
-},{"./has-keys":238,"object-keys":241}],240:[function(require,module,exports){
+},{"./has-keys":239,"object-keys":242}],241:[function(require,module,exports){
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
 
@@ -40760,11 +40848,11 @@ module.exports = function forEach(obj, fn) {
 };
 
 
-},{}],241:[function(require,module,exports){
+},{}],242:[function(require,module,exports){
 module.exports = Object.keys || require('./shim');
 
 
-},{"./shim":243}],242:[function(require,module,exports){
+},{"./shim":244}],243:[function(require,module,exports){
 var toString = Object.prototype.toString;
 
 module.exports = function isArguments(value) {
@@ -40782,7 +40870,7 @@ module.exports = function isArguments(value) {
 };
 
 
-},{}],243:[function(require,module,exports){
+},{}],244:[function(require,module,exports){
 (function () {
 	"use strict";
 
@@ -40846,7 +40934,7 @@ module.exports = function isArguments(value) {
 }());
 
 
-},{"./foreach":240,"./isArguments":242}],244:[function(require,module,exports){
+},{"./foreach":241,"./isArguments":243}],245:[function(require,module,exports){
 (function (process,Buffer){
 /**
  *
@@ -40968,7 +41056,7 @@ Database.prototype.check = function(interest, callback, db) {
 module.exports = Database;
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"_process":23,"buffer":3,"leveldown":228,"levelup":251}],245:[function(require,module,exports){
+},{"_process":23,"buffer":3,"leveldown":229,"levelup":253}],246:[function(require,module,exports){
 
 function repoEntry (element, data){
   var self = this;
@@ -41025,10 +41113,10 @@ repoEntry.prototype.stale = function(node){
 
 module.exports = repoEntry;
 
-},{}],246:[function(require,module,exports){
+},{}],247:[function(require,module,exports){
 var NameSpace = require("../index.js");
 
-window.joinRoom = function(roomName){
+exports.joinRoom = function(roomName, onFileAnnounce, onMessage){
   window.room = new NameSpace(roomName)
   room.join(2, function(err, faceID){
     console.log("new peer connection in the room", err, faceID)
@@ -41036,6 +41124,7 @@ window.joinRoom = function(roomName){
   .setDataType("json")
   .subscribe(function(err, data){
     if(!err){
+      onMessage(data)
       console.log(data)
     } else {
       console.log(err)
@@ -41045,30 +41134,90 @@ window.joinRoom = function(roomName){
   window.fileBox = room.IO("files")
   console.log(room, fileBox)
   fileBox.setDataType("file")
-         .listen(function(err, uri){
+         .listen(function(err, fileName){
            console.log("got file announce", fileName)
            window.fileName = fileName
+           onFileAnnounce(fileName)
          })
 }
 
-window.shareFile = function(file){
+exports.shareFile = function(file){
   fileBox.publish(file.name, file)
 }
 
-window.getFile = function(fileName){
+exports.getFile = function(fileName, callback){
   fileBox.fetch(fileName, function(err, file){
-    console.log("got file?", err, data)
+    console.log("got file?", err, file)
+    callback(err, file)
   })
 }
 
-window.chat = function(message){
+exports.chat = function(message){
   room.publish("" + Math.random(), {
     handle: window.handle
     , message: message
   })
 }
+module.exports = exports;
 
-},{"../index.js":39}],247:[function(require,module,exports){
+},{"../index.js":39}],248:[function(require,module,exports){
+
+var dropkick = require('dropkick');
+
+
+dropkick(document.body)
+  .on('file', function(file) {
+    ndnFunc.shareFile(file)
+  })
+
+
+window.handle = prompt("choose a handle: ")
+window.roomName = prompt("enter room name: ")
+
+
+window.ndnFunc = require("../src.js")
+
+var input = document.getElementById("chatInput")
+input.addEventListener("keydown", function(e) {
+    if (!e) { var e = window.event; }
+    if (e.keyCode == 13) { ndnFunc.chat(input.value); input.value = ""; }
+}, false)
+
+
+
+var makeSaveButton = function(fileName, file){
+  var a = document.createElement("a")
+  a.download = fileName;
+  a.innerText = "save"
+  a.href = URL.createObjectURL(file);
+  console.log(a, file, fileName)
+  //put link somewhere
+}
+
+var makeDownloadButton = function(fileName){
+  var button = document.createElement("button")
+  button.innerText = "download"
+  button.onclick = function(){
+    ndnFunc.getFile(fileName, function(err,file){
+      console.log("file fetched", fileName, file)
+      makeSaveButton(fileName, file)
+    })
+  }
+
+  //put button somewhere
+}
+var displayMessage = function(msg){
+  var line = document.createElement("p")
+  line.innerText = msg.handle + " : " + msg.message + "  ";
+  document.getElementById("output").insertBefore(line, document.getElementById("output").firstChild)
+
+}
+
+setTimeout(function(){
+ndnFunc.joinRoom(roomName, makeDownloadButton, displayMessage)
+}, 200)
+
+},{"../src.js":247,"dropkick":40}],249:[function(require,module,exports){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
  * MIT License
@@ -41149,7 +41298,7 @@ Batch.prototype.write = function (callback) {
 
 module.exports = Batch
 
-},{"./errors":250,"./util":253}],248:[function(require,module,exports){
+},{"./errors":252,"./util":255}],250:[function(require,module,exports){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
  * MIT License
@@ -41234,7 +41383,7 @@ module.exports = {
   , decodeKey       : decodeKey
 }
 
-},{"./encodings":249}],249:[function(require,module,exports){
+},{"./encodings":251}],251:[function(require,module,exports){
 (function (Buffer){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
@@ -41310,7 +41459,7 @@ module.exports = (function () {
 
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3}],250:[function(require,module,exports){
+},{"buffer":3}],252:[function(require,module,exports){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
  * MIT License
@@ -41334,7 +41483,7 @@ module.exports = {
   , EncodingError       : createError('EncodingError', LevelUPError)
 }
 
-},{"errno":261}],251:[function(require,module,exports){
+},{"errno":263}],253:[function(require,module,exports){
 (function (process){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
@@ -41803,7 +41952,7 @@ module.exports.repair  = utilStatic('repair')
 
 
 }).call(this,require('_process'))
-},{"./batch":247,"./codec":248,"./errors":250,"./read-stream":252,"./util":253,"./write-stream":254,"_process":23,"deferred-leveldown":256,"events":19,"prr":262,"util":38,"xtend":273}],252:[function(require,module,exports){
+},{"./batch":249,"./codec":250,"./errors":252,"./read-stream":254,"./util":255,"./write-stream":256,"_process":23,"deferred-leveldown":258,"events":19,"prr":264,"util":38,"xtend":275}],254:[function(require,module,exports){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
  * MIT License <https://github.com/rvagg/node-levelup/blob/master/LICENSE.md>
@@ -41902,7 +42051,7 @@ ReadStream.prototype.toString = function () {
 module.exports = ReadStream
 
 
-},{"./errors":250,"./util":253,"readable-stream":272,"util":38,"xtend":273}],253:[function(require,module,exports){
+},{"./errors":252,"./util":255,"readable-stream":274,"util":38,"xtend":275}],255:[function(require,module,exports){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
  * MIT License
@@ -41996,7 +42145,7 @@ module.exports = {
   , isDefined       : isDefined
 }
 
-},{"../package.json":274,"./encodings":249,"./errors":250,"leveldown":2,"leveldown/package":2,"semver":2,"xtend":273}],254:[function(require,module,exports){
+},{"../package.json":276,"./encodings":251,"./errors":252,"leveldown":2,"leveldown/package":2,"semver":2,"xtend":275}],256:[function(require,module,exports){
 (function (process,global){
 /* Copyright (c) 2012-2014 LevelUP contributors
  * See list at <https://github.com/rvagg/node-levelup#contributing>
@@ -42178,7 +42327,7 @@ WriteStream.prototype.toString = function () {
 module.exports = WriteStream
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./util":253,"_process":23,"bl":255,"stream":36,"util":38,"xtend":273}],255:[function(require,module,exports){
+},{"./util":255,"_process":23,"bl":257,"stream":36,"util":38,"xtend":275}],257:[function(require,module,exports){
 (function (Buffer){
 var DuplexStream = require('readable-stream').Duplex
   , util         = require('util')
@@ -42395,7 +42544,7 @@ BufferList.prototype.destroy = function () {
 module.exports = BufferList
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":3,"readable-stream":272,"util":38}],256:[function(require,module,exports){
+},{"buffer":3,"readable-stream":274,"util":38}],258:[function(require,module,exports){
 (function (process,Buffer){
 var util              = require('util')
   , AbstractLevelDOWN = require('abstract-leveldown').AbstractLevelDOWN
@@ -42446,11 +42595,11 @@ DeferredLevelDOWN.prototype._iterator = function () {
 module.exports = DeferredLevelDOWN
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"_process":23,"abstract-leveldown":259,"buffer":3,"util":38}],257:[function(require,module,exports){
-module.exports=require(230)
-},{"_process":23}],258:[function(require,module,exports){
+},{"_process":23,"abstract-leveldown":261,"buffer":3,"util":38}],259:[function(require,module,exports){
 module.exports=require(231)
-},{"_process":23}],259:[function(require,module,exports){
+},{"_process":23}],260:[function(require,module,exports){
+module.exports=require(232)
+},{"_process":23}],261:[function(require,module,exports){
 (function (process,Buffer){
 /* Copyright (c) 2013 Rod Vagg, MIT License */
 
@@ -42710,7 +42859,7 @@ module.exports.AbstractIterator     = AbstractIterator
 module.exports.AbstractChainedBatch = AbstractChainedBatch
 
 }).call(this,require('_process'),require("buffer").Buffer)
-},{"./abstract-chained-batch":257,"./abstract-iterator":258,"_process":23,"buffer":3,"xtend":273}],260:[function(require,module,exports){
+},{"./abstract-chained-batch":259,"./abstract-iterator":260,"_process":23,"buffer":3,"xtend":275}],262:[function(require,module,exports){
 var prr = require('prr')
 
 function init (type, message, cause) {
@@ -42767,7 +42916,7 @@ module.exports = function (errno) {
   }
 }
 
-},{"prr":262}],261:[function(require,module,exports){
+},{"prr":264}],263:[function(require,module,exports){
 var all = module.exports.all = [
  {
   "errno": -1,
@@ -43195,7 +43344,7 @@ module.exports.code = {
 
 module.exports.custom = require("./custom")(module.exports)
 module.exports.create = module.exports.custom.createError
-},{"./custom":260}],262:[function(require,module,exports){
+},{"./custom":262}],264:[function(require,module,exports){
 /*!
   * prr
   * (c) 2013 Rod Vagg <rod@vagg.org>
@@ -43259,29 +43408,29 @@ module.exports.create = module.exports.custom.createError
 
   return prr
 })
-},{}],263:[function(require,module,exports){
+},{}],265:[function(require,module,exports){
 module.exports=require(25)
-},{"./_stream_readable":265,"./_stream_writable":267,"_process":23,"core-util-is":268,"inherits":269}],264:[function(require,module,exports){
+},{"./_stream_readable":267,"./_stream_writable":269,"_process":23,"core-util-is":270,"inherits":271}],266:[function(require,module,exports){
 module.exports=require(26)
-},{"./_stream_transform":266,"core-util-is":268,"inherits":269}],265:[function(require,module,exports){
+},{"./_stream_transform":268,"core-util-is":270,"inherits":271}],267:[function(require,module,exports){
 module.exports=require(27)
-},{"_process":23,"buffer":3,"core-util-is":268,"events":19,"inherits":269,"isarray":270,"stream":36,"string_decoder/":271}],266:[function(require,module,exports){
+},{"_process":23,"buffer":3,"core-util-is":270,"events":19,"inherits":271,"isarray":272,"stream":36,"string_decoder/":273}],268:[function(require,module,exports){
 module.exports=require(28)
-},{"./_stream_duplex":263,"core-util-is":268,"inherits":269}],267:[function(require,module,exports){
+},{"./_stream_duplex":265,"core-util-is":270,"inherits":271}],269:[function(require,module,exports){
 module.exports=require(29)
-},{"./_stream_duplex":263,"_process":23,"buffer":3,"core-util-is":268,"inherits":269,"stream":36}],268:[function(require,module,exports){
+},{"./_stream_duplex":265,"_process":23,"buffer":3,"core-util-is":270,"inherits":271,"stream":36}],270:[function(require,module,exports){
 module.exports=require(30)
-},{"buffer":3}],269:[function(require,module,exports){
+},{"buffer":3}],271:[function(require,module,exports){
 module.exports=require(20)
-},{}],270:[function(require,module,exports){
+},{}],272:[function(require,module,exports){
 module.exports=require(21)
-},{}],271:[function(require,module,exports){
+},{}],273:[function(require,module,exports){
 module.exports=require(31)
-},{"buffer":3}],272:[function(require,module,exports){
+},{"buffer":3}],274:[function(require,module,exports){
 module.exports=require(33)
-},{"./lib/_stream_duplex.js":263,"./lib/_stream_passthrough.js":264,"./lib/_stream_readable.js":265,"./lib/_stream_transform.js":266,"./lib/_stream_writable.js":267}],273:[function(require,module,exports){
-module.exports=require(233)
-},{}],274:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":265,"./lib/_stream_passthrough.js":266,"./lib/_stream_readable.js":267,"./lib/_stream_transform.js":268,"./lib/_stream_writable.js":269}],275:[function(require,module,exports){
+module.exports=require(234)
+},{}],276:[function(require,module,exports){
 module.exports={
   "name": "levelup",
   "description": "Fast & simple storage - a Node.js-style LevelDB wrapper",
@@ -43419,4 +43568,4 @@ module.exports={
   "_resolved": "https://registry.npmjs.org/levelup/-/levelup-0.19.0.tgz"
 }
 
-},{}]},{},[246]);
+},{}]},{},[248]);

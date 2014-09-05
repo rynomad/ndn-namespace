@@ -2,10 +2,6 @@
 var dropkick = require('dropkick');
 
 
-
-var ndnFunc = require("../src.js")
-
-
 dropkick(document.body)
   .on('file', function(file) {
     ndnFunc.shareFile(file)
@@ -16,6 +12,7 @@ window.handle = prompt("choose a handle: ")
 window.roomName = prompt("enter room name: ")
 
 
+window.ndnFunc = require("../src.js")
 
 var input = document.getElementById("chatInput")
 input.addEventListener("keydown", function(e) {
@@ -23,33 +20,41 @@ input.addEventListener("keydown", function(e) {
     if (e.keyCode == 13) { ndnFunc.chat(input.value); input.value = ""; }
 }, false)
 
-ndnFunc.joinRoom(roomName)
 
 
-var makeSaveButton = function(line, fileName, file){
+var makeSaveButton = function(fileName, file){
   var a = document.createElement("a")
   a.download = fileName;
   a.innerText = "save"
   a.href = URL.createObjectURL(file);
-  line.appendChild(a)
+  console.log(a, file, fileName)
+  //put link somewhere
 }
 
-var makeDownloadButton = function(line, fileName, io){
+var makeDownloadButton = function(fileName){
   var button = document.createElement("button")
   button.innerText = "download"
   button.onclick = function(){
     ndnFunc.getFile(fileName, function(err,file){
-      makeSaveButton(line, fileName, file)
+      console.log("file fetched", fileName, file)
+      makeSaveButton(fileName, file)
     })
   }
-  line.appendChild(button)
+  //put button somewhere
 }
-module.exports.displayMessage = function(msg, io){
+
+var displayMessage = function(msg){
   var line = document.createElement("p")
   line.innerText = msg.handle + " : " + msg.message + "  ";
   document.getElementById("output").insertBefore(line, document.getElementById("output").firstChild)
-  if (msg.message.indexOf("file://") === 0){
-    console.log("msg is file announce",msg.message.substring(6))
-    makeDownloadButton(line, msg.message, io)
-  }
+
 }
+
+document.getElementById("startChatButton").onclick = function(){
+
+
+  ndnFunc.joinRoom(roomName, makeDownloadButton, displayMessage)
+}
+
+setTimeout(function(){
+}, 200)
