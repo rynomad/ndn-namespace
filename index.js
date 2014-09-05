@@ -31,6 +31,7 @@ function NameSpace(prefix){
   this.connectionRequestSuffix = new ndn.Name("requestPeerConnection")
   this.announcementSuffix = new ndn.Name("announceNewData")
   gremlin.addRegisteredPrefix(this.prefix.toUri(), 0)
+  console.log(this.prefix.toUri(), gremlin.interfaces.Faces[0])
   return this;
 };
 
@@ -128,7 +129,7 @@ NameSpace.prototype.publish = function(name, toPublish) {
   gremlin
   .io
   .publisher.setName(this.prefix.toUri() + ndnName.toUri())
-  .setFreshnessPeriod(4000)
+  .setFreshnessPeriod(60 * 60 * 1000)
   .setToPublish(toPublish)
   .publish(Self.announce());
   return this;
@@ -140,7 +141,7 @@ NameSpace.prototype.fetch = function(name, onAppData){
   gremlin
   .io
   .fetcher.setName(this.prefix.toUri() + ndnName.toUri())
-  .setInterestLifetimeMillisecond(400)
+  .setInterestLifetimeMilliseconds(400)
   .setType(this.dataType)
   .get(onAppData);
   return this;
