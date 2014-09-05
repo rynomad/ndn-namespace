@@ -1,0 +1,11 @@
+{
+  "name": "ndn-namespace",
+  "version": "0.0.0",
+  "description": "A simple API for NDN P2P apps over WebRTC datachannels",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
