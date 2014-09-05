@@ -1,6 +1,6 @@
 var NameSpace = require("../index.js");
 
-exports.joinRoom = function(roomName){
+exports.joinRoom = function(roomName, onFileAnnounce, onMessage){
   window.room = new NameSpace(roomName)
   room.join(2, function(err, faceID){
     console.log("new peer connection in the room", err, faceID)
@@ -8,6 +8,7 @@ exports.joinRoom = function(roomName){
   .setDataType("json")
   .subscribe(function(err, data){
     if(!err){
+      onMessage(data)
       console.log(data)
     } else {
       console.log(err)
@@ -20,6 +21,7 @@ exports.joinRoom = function(roomName){
          .listen(function(err, uri){
            console.log("got file announce", fileName)
            window.fileName = fileName
+           onFileAnnounce(uri)
          })
 }
 
