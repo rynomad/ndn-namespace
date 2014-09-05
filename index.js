@@ -48,8 +48,6 @@ NameSpace.prototype.join = function(maxPeers){
     if (!err){
       gremlin.addRegisteredPrefix(Self.prefix, firstFaceID)
     }
-
-    callback(err, firstFaceID);
   };
 
   var onFaceClosed = function(closedFaceID){
@@ -67,8 +65,15 @@ NameSpace.prototype.join = function(maxPeers){
 
 NameSpace.prototype.listen = function(onAnnounce){
   var Self = this;
+  var awares = []
 
   gremlin.addListener(Self.prefix.toUri() + Self.announcementSuffix.toUri(), function(interest, faceID){
+    for (var i = 0 ; i < awares.length - 1; i++){
+      if (awares[i] === interest.name.toUri()){
+        return;
+      };
+    }
+    awares.push(interest.name.toUri());
     onAnnounce(null, interest.name.getSubName((Self.prefix.size() * 2) + Self.announcementSuffix.size()).toUri());
   })
 }
